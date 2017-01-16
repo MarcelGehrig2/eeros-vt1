@@ -1,26 +1,23 @@
+// #include <eeros/sequencer/Sequencer.hpp>
 #include <eeros/sequencer/Sequence.hpp>
 
+using namespace eeros;
 using namespace eeros::sequencer;
 
-SequenceBase::SequenceBase(std::string name, Sequencer* sequencer) : name(name), sequencer(sequencer) { }
+// Sequence::Sequence(Sequencer& S, Sequence* caller, std::__cxx11::string name)
+// : S(S), name(name), caller(caller)
+// {
+// 	
+// }
 
-std::string SequenceBase::getName() const {
+// Sequence::
+
+// Sequence::~Sequence()
+// {
+// 
+// }
+
+std::string Sequence::getName()
+{
 	return name;
 }
-
-bool SequenceBase::checkPreCondition() {
-	return true;
-}
-bool SequenceBase::checkPostCondition() {
-	return true;
-}
-
-void SequenceBase::yield() {
-	if(sequencer != nullptr) {
-		sequencer->yield();
-	}
-}
-
-void SequenceBase::init() { }
-
-void SequenceBase::exit() { }

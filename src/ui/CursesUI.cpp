@@ -83,13 +83,14 @@ void CursesUI::printTitle(std::string text, unsigned int line) {
 }
 
 void CursesUI::printSequenceList(unsigned int first) {
-	const std::vector<Sequence<void>*>& list = sequencer.getListOfCmdSequences();
-	unsigned int i = 0;
-	printTitle("Command sequences", sequenceListStart);
-	for(auto entry : list) {
-		mvprintw(sequenceListStart + 1 + i, 1, "%i) %s", i, entry->getName().c_str());
-		i++;
-	}
+	//TODO
+// 	const std::vector<Sequence<void>*>& list = sequencer.getListOfCmdSequences();
+// 	unsigned int i = 0;
+// 	printTitle("Command sequences", sequenceListStart);
+// 	for(auto entry : list) {
+// 		mvprintw(sequenceListStart + 1 + i, 1, "%i) %s", i, entry->getName().c_str());
+// 		i++;
+// 	}
 }
 
 void CursesUI::printMessage(std::string msg, unsigned int index) {
@@ -224,28 +225,28 @@ void CursesUI::run() {
 		char input[10];
 		switch(c) {
 			case KEY_F(2):
-				if(checkCmdToggleIsActive()) sequencer.toggleMode();
+// 				if(checkCmdToggleIsActive()) sequencer.toggleMode();	//TODO
 				updateScreen();
 				break;
 			case KEY_F(3):
-				if(checkCmdProceedIsActive()) sequencer.proceed();
+// 				if(checkCmdProceedIsActive()) sequencer.proceed();		//TODO
 				updateScreen();
 				break;
 			case KEY_F(4):
-				if(checkCmdAbortIsActive()) sequencer.abort();
+// 				if(checkCmdAbortIsActive()) sequencer.abort();	//TODO
 				updateScreen();
 				break;
 			case KEY_F(5):
 				if(checkCmdChooseSeqIsActive()){
-					while(!sequencer.start(promptForInt("Enter sequence number:")));
+// 					while(!sequencer.start(promptForInt("Enter sequence number:")));	//TODO
 				}
 				break;
 			case 27: // Esc
 			case KEY_F(10):
-				sequencer.stepMode();
-				sequencer.abort();
+// 				sequencer.stepMode();	//TODO
+// 				sequencer.abort();	//TODO
 				while(sequencer.getState() != state::idle);
-				sequencer.shutdown();
+// 				sequencer.shutdown();	//TODO
 				exit();
 				break;
 			default:
