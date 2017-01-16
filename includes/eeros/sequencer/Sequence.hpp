@@ -35,6 +35,9 @@ namespace eeros {
 		
 	// 	void addSequence
 		
+		
+// 	public:
+		eeros::logger::Logger<eeros::logger::LogWriter> log;
 		std::string name;
 		Sequencer& S;
 		
