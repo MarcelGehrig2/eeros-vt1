@@ -29,14 +29,15 @@ namespace eeros {
 		Sequence(Sequencer& S, Sequence* caller, std::string name);
 	// 	~Sequence();
 		
-		virtual void run() = 0;
-	// 	virtual void action();
+		
+		virtual void start();
+		virtual void action() = 0;
 		std::string getName();
 		
 	// 	void addSequence
 		
 		
-// 	public:
+// 	private:
 		eeros::logger::Logger<eeros::logger::LogWriter> log;
 		std::string name;
 		Sequencer& S;
@@ -45,6 +46,10 @@ namespace eeros {
 		std::condition_variable cv;
 		Sequence* caller;
 		bool blocking = false;
+		bool created;
+		
+	private:
+		virtual void run();
 	};
 	
 	};	//namespace sequencer

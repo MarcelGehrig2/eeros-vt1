@@ -1,4 +1,5 @@
 #include <eeros/sequencer/Sequencer.hpp>
+#include <eeros/sequencer/Sequence.hpp>
 // #include <eeros/sequencer/Sequence.hpp>
 // #include <eeros/core/EEROSException.hpp>
 // #include <cstdio>
@@ -11,7 +12,9 @@ using namespace eeros::sequencer;
 void Sequencer::addMainSequence(Sequence* mainSeq)
 { 
 	mainSequence = mainSeq;
-// 	mainSeq->run();
+	while ( mainSequence == NULL ) {};
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));	//
+	mainSequence->start();
 }
 
 
@@ -23,11 +26,9 @@ void Sequencer::addSequence(Sequence* seq)
 
 void Sequencer::run()
 {
-// 	mainSequence->run();
-// 	mainSequence->start();
+	
 // 	mainSequence->join();
 }
-
 
 
 

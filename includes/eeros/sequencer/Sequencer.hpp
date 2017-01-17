@@ -24,9 +24,10 @@ namespace eeros {
 	
 		class Sequence;		//forward declaration
 		
+		
 		class Sequencer : public Thread {
 		public:
-			Sequencer();
+// 			Sequencer();
 		// 	Sequencer(Sequence* mainSequence);
 			
 			void run();
