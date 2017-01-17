@@ -16,41 +16,56 @@
 // #include <eeros/sequencer/Sequencer.hpp>
 // #include <eeros/sequencer/SequenceResult.hpp>
 #include "eeros/core/Thread.hpp"
-#include <eeros/sequencer/Sequencer.hpp>
+// #include <eeros/sequencer/Sequencer.hpp>
+#include <eeros/sequencer/BaseSequence.hpp>
+// #include <eeros/sequencer/Monitor.hpp>
 
 namespace eeros {
 	namespace sequencer {
-	
-	class Sequencer;		//forward declaration
-	
-	class Sequence : public Thread {
-	public:
-// 		Sequence();
-		Sequence(Sequencer& S, Sequence* caller, std::string name);
-	// 	~Sequence();
+
 		
+		class BaseSequence;		//forward declaration
 		
-		virtual void start();
-		virtual void action() = 0;
-		std::string getName();
+		class Sequence : public Thread, public BaseSequence {
+// 		class Sequence : public BaseSequence {
+// 		class Sequence : public Thread {
+		public:
+	// 		Sequence();
+			Sequence(Sequencer& S, Sequence* caller, std::string name);
+			~Sequence();
+			
+			int operator() ();
+			int runBlocking();
+			int runNonBlocking();
+			
+			virtual int start();
+			virtual int action() = 0;
+			
+			std::string getName() const;
+			void setName(std::string name);
+			
+			bool isStep();
 		
-	// 	void addSequence
-		
-		
-// 	private:
-		eeros::logger::Logger<eeros::logger::LogWriter> log;
-		std::string name;
-		Sequencer& S;
-		
-		std::mutex m;
-		std::condition_variable cv;
-		Sequence* caller;
-		bool blocking = false;
-		bool created;
-		
-	private:
-		virtual void run();
-	};
+// // // 			void addMonitor(Monitor* monitor);	//TODO implementm
+		// 	void addSequence
+			
+			
+	// 	private:
+			std::string name;
+			int sequenceID = 0;
+// 			static int sequenceCount;	//TODO works like intended? counts all created sequences
+			
+// 			eeros::logger::Logger<eeros::logger::LogWriter> log; is in BaseSequence
+// 			Sequencer& S; is in BaseSequence
+			
+			std::mutex m;
+			std::condition_variable cv;
+// 			Sequence* caller; is in BaseSequence
+			bool blocking = false;
+			
+		private:
+			virtual void run();
+		};
 	
 	};	//namespace sequencer
 }; // namespace eeros

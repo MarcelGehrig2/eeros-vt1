@@ -7,7 +7,7 @@
 // #include <vector>
 // #include <mutex>
 // #include <condition_variable>
-// #include <eeros/core/Thread.hpp>
+#include <eeros/core/Thread.hpp>
 #include <eeros/sequencer/Sequence.hpp>
 
 namespace eeros {
@@ -22,18 +22,18 @@ namespace eeros {
 			enum type { automatic, stepping };
 		}
 	
-		class Sequence;		//forward declaration
+		class BaseSequence;		//forward declaration
 		
 		
 		class Sequencer : public Thread {
 		public:
 // 			Sequencer();
-		// 	Sequencer(Sequence* mainSequence);
+		// 	Sequencer(BaseSequence* mainSequence);
 			
 			void run();
 			
-			void addSequence(Sequence* seq);
-			void addMainSequence(Sequence* mainSeq);
+			void addSequence(BaseSequence* seq);
+			void addMainSequence(BaseSequence* mainSeq);
 			
 			
 			
@@ -43,8 +43,8 @@ namespace eeros {
 			
 			
 		private:
-			Sequence* mainSequence;
-			std::vector< Sequence* > sequenceList;
+			BaseSequence* mainSequence;
+			std::vector< BaseSequence* > sequenceList;
 			
 			
 			unsigned int id;

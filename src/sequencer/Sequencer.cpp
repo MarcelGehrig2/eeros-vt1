@@ -1,5 +1,6 @@
 #include <eeros/sequencer/Sequencer.hpp>
 #include <eeros/sequencer/Sequence.hpp>
+#include <eeros/sequencer/BaseSequence.hpp>
 // #include <eeros/sequencer/Sequence.hpp>
 // #include <eeros/core/EEROSException.hpp>
 // #include <cstdio>
@@ -9,8 +10,9 @@ using namespace eeros::sequencer;
 
 // int Sequencer::instanceCounter = 0;
 
-void Sequencer::addMainSequence(Sequence* mainSeq)
+void Sequencer::addMainSequence(BaseSequence* mainSeq)
 { 
+	if ( mainSeq->isStep() ) log.error() << "MainSequence has to be a Sequence, not a Step";
 	mainSequence = mainSeq;
 	while ( mainSequence == NULL ) {};
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));	//
@@ -19,7 +21,7 @@ void Sequencer::addMainSequence(Sequence* mainSeq)
 
 
 
-void Sequencer::addSequence(Sequence* seq)
+void Sequencer::addSequence(BaseSequence* seq)
 {
 	sequenceList.push_back(seq);
 }
@@ -48,3 +50,33 @@ std::string Sequencer::getName() const {
 	std::string name = "Sequencer";		//included for backwards compatibelity. Only 1 Sequencer can be used.
 	return std::string(name);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
