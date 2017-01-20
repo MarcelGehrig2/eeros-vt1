@@ -27,6 +27,7 @@ Sequence::Sequence(Sequencer& S, Sequence* caller, std::__cxx11::string name)
 		//TODO Error if name allready exists
 		this->name = name;
 	}
+	log.info() << "Sequence '" << name << "' created";
 }
 
 Sequence::~Sequence()
@@ -36,11 +37,12 @@ Sequence::~Sequence()
 
 
 
-void Sequence::run()
+void Sequence::run()	//runs in thread
 {
-	log.trace() << "Sequence '" << name << "' run() started";
+	log.trace() << "Sequence '" << name << "' run() started";	
 	std::unique_lock<std::mutex> lk(m);
-	cv.wait(lk);
+	cv.wait(lk);							//sends Sequence to sleep. Waiting for start()
+	lk.unlock();
 	log.trace() << "Sequence '" << name << "' action";
 	action();
 	log.trace() << "Sequence '" << name << "' run() ended";
@@ -48,22 +50,38 @@ void Sequence::run()
 
 int Sequence::start()
 {
-	cv.notify_one();
+// 	std::this_thread::sleep_for(std::chrono::milliseconds(100));	//TODO better way to enssure, Sequence is created
+	
+	
+	log.trace() << "Sequence '" << name << "' start() started. CallerSequence: " << callerSequence->getName();
+	if ( getIsBlocking() ) {	//starts action() blocking
+		log.trace() << "Sequence '" << name << "' blocking action()";
+		action();
+		log.trace() << "Sequence '" << name << "' blocking action() ended";
+	}
+	else {
+		log.trace() << "Sequence '" << name << "' nonblocking action()";
+		cv.notify_one();		//starts action() in thread
+	}
+	
 	return 0;
 }
 
 int Sequence::operator()()
 {
-// 	return start();
-	start();
-	
-	return 0;		//TODO return value?
+	return start();
 }
 
 bool Sequence::isStep()
 {
 	return false;
 }
+
+BaseSequence* Sequence::getLatestCalledSequence()
+{
+	return latestCalledSequence;
+}
+
 
 std::string Sequence::getName() const
 {
@@ -74,12 +92,6 @@ void Sequence::setName(std::__cxx11::string name)
 {
 	this->name = name;
 }
-
-
-
-
-
-
 
 
 
@@ -108,20 +120,29 @@ void Sequence::setName(std::__cxx11::string name)
 using namespace eeros;
 using namespace eeros::sequencer;
 
-BaseSequence::BaseSequence(Sequencer& S, BaseSequence* caller)
+BaseSequence::BaseSequence(Sequencer& S, Sequence* caller)
 // : S(S), startTime(std::chrono::steady_clock::now()), callerSequence(caller)
 : S(S), callerSequence(caller)
 { 
 
+	if ( callerSequence == this ) {
+		static int numberOfMainSequence;
+		numberOfMainSequence++;
+		if ( numberOfMainSequence > 1 ) 
+			log.error() << "Only one MainSequence is possible. Use 'Sequence(S, caller, name)' to construct a normal sequence";
+		else {
+			setIsMainSequence();
+		}
+	}
 	
 	setState("idle");
 	
-
-	
 	
 	//get and update callerStack
-	callerStack = callerSequence->getCallerStack();
-	callerStack.push_back(callerSequence);	//add latest caller
+	if ( !getIsMainSequence() ) {
+		callerStack = callerSequence->getCallerStack();
+		callerStack.push_back(callerSequence);	//add latest caller
+	}
 	
 	//get and update callerStackBlocking
 	//TODO
@@ -265,7 +286,7 @@ bool BaseSequence::isStep() const
 // }
 
 
-BaseSequence* BaseSequence::getCallerSequence() const
+Sequence* BaseSequence::getCallerSequence() const
 {
 	return callerSequence;
 }
@@ -310,12 +331,12 @@ void BaseSequence::setRunningState(runningStateEnum runningState)
 	this->runningState=runningState;
 }
 
-std::vector< BaseSequence* > BaseSequence::getCallerStack() const
+std::vector< Sequence* > BaseSequence::getCallerStack() const
 {
 	return callerStack;
 }
 
-std::vector< BaseSequence* > BaseSequence::getCallerStackBlocking() const
+std::vector< Sequence* > BaseSequence::getCallerStackBlocking() const
 {
 	return callerStackBlocking;
 }
@@ -426,8 +447,12 @@ void BaseSequence::restartSequence()
 // // // }
 
 
-
-void BaseSequence::pauseSequence()
+bool BaseSequence::getIsMainSequence()
 {
+	return isMainSequence;
+}
 
+bool BaseSequence::setIsMainSequence()
+{
+	isMainSequence = true;
 }

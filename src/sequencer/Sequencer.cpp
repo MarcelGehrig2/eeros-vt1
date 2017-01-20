@@ -14,9 +14,8 @@ void Sequencer::addMainSequence(BaseSequence* mainSeq)
 { 
 	if ( mainSeq->isStep() ) log.error() << "MainSequence has to be a Sequence, not a Step";
 	mainSequence = mainSeq;
-	while ( mainSequence == NULL ) {};
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));	//
-	mainSequence->start();
+// 	std::this_thread::sleep_for(std::chrono::milliseconds(150));	//
+	mainSequence->start();	
 }
 
 

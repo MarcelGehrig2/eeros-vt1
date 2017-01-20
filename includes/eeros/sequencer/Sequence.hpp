@@ -15,7 +15,7 @@
 // #include <eeros/logger/LogWriter.hpp>
 // #include <eeros/sequencer/Sequencer.hpp>
 // #include <eeros/sequencer/SequenceResult.hpp>
-#include "eeros/core/Thread.hpp"
+#include "eeros/core/ThreadSequence.hpp"
 // #include <eeros/sequencer/Sequencer.hpp>
 #include <eeros/sequencer/BaseSequence.hpp>
 // #include <eeros/sequencer/Monitor.hpp>
@@ -26,17 +26,16 @@ namespace eeros {
 		
 		class BaseSequence;		//forward declaration
 		
-		class Sequence : public Thread, public BaseSequence {
+		class Sequence : public ThreadSequence, public BaseSequence {
 // 		class Sequence : public BaseSequence {
-// 		class Sequence : public Thread {
+// 		class Sequence : public Thread {	
 		public:
 	// 		Sequence();
 			Sequence(Sequencer& S, Sequence* caller, std::string name);
 			~Sequence();
 			
 			int operator() ();
-			int runBlocking();
-			int runNonBlocking();
+
 			
 			virtual int start();
 			virtual int action() = 0;
@@ -46,8 +45,10 @@ namespace eeros {
 			
 			bool isStep();
 		
-// // // 			void addMonitor(Monitor* monitor);	//TODO implementm
+			BaseSequence* getLatestCalledSequence();	
+// // // 			void addMonitor(Monitor* monitor);	//TODO implement
 		// 	void addSequence
+			
 			
 			
 	// 	private:
@@ -61,10 +62,12 @@ namespace eeros {
 			std::mutex m;
 			std::condition_variable cv;
 // 			Sequence* caller; is in BaseSequence
-			bool blocking = false;
+// 			bool blocking = false;
 			
 		private:
 			virtual void run();
+			BaseSequence* latestCalledSequence;
+			
 		};
 	
 	};	//namespace sequencer

@@ -21,6 +21,7 @@
 namespace eeros {
 	namespace sequencer {
 		
+		class Sequence;
 		class Sequencer;		//forward declaration
 		class BaseSequence;
 // 		class BaseSequence;		//forward declaration
@@ -42,7 +43,7 @@ namespace eeros {
 		// 	friend class eeros::sequencer::Sequencer;
 			
 		public:
-			BaseSequence(Sequencer& S, BaseSequence* caller);
+			BaseSequence(Sequencer& S, Sequence* caller);
 			
 		// 	virtual int operator()(std::string args) = 0;	//has to be implemented in derived class
 // 			int start();	//called bei operator() by derived class
@@ -66,10 +67,12 @@ namespace eeros {
 			
 			void setID(int ID);
 			int getID() const;		//steps allways have ID=-99
-			BaseSequence* getCallerSequence() const;
-			std::vector< BaseSequence* > getCallerStack() const;
-			std::vector< BaseSequence* > getCallerStackBlocking() const;
+			Sequence* getCallerSequence() const;
+			std::vector< Sequence* > getCallerStack() const;
+			std::vector< Sequence* > getCallerStackBlocking() const;
 		// 	SequencerException& getSequencerException() const;
+			bool getIsMainSequence();
+			bool setIsMainSequence();
 			
 
 			
@@ -102,10 +105,7 @@ namespace eeros {
 // // // 			void setTimeoutExceptionSequence(BaseSequence* sequence);
 // // // 			void resetTimeout();
 			
-			// run mode
-			void setIsBlocking();		//standard run mode
-			void setIsNonBlocking();
-			bool getIsBlocking() const;
+
 		// 	
 		// protected:
 		// 	virtual void yield();
@@ -120,9 +120,14 @@ namespace eeros {
 			
 		protected:
 			Sequencer& S;			//reference to singleton Sequencer
-// 			eeros::logger::Logger<eeros::logger::LogWriter> log;
+			eeros::logger::Logger<eeros::logger::LogWriter> log;
 
-
+			int runBlocking();
+			int runNonBlocking();
+			// run mode:
+			void setIsBlocking();		//standard run mode
+			void setIsNonBlocking();
+			bool getIsBlocking() const;
 			
 			int pollingTime;					//in milliseconds for checkPostconditions (including monitors)
 			int nrOfSequenceRepetitions = 1;	//number of repetitions of this sequence; 0==infinite; 1==run only once; 2==run once and repete once
@@ -133,13 +138,14 @@ namespace eeros {
 			
 			std::string state;				//TODO use enum,	userdefined
 			runningStateEnum runningState = idle;	
-			
-			
-			
 			bool isBlocking = true;			//standard run mode
-			std::vector< BaseSequence* > callerStack;	//vector with all caller sequences. Top element is latest caller
-			std::vector< BaseSequence* > callerStackBlocking;	//TODO vector with all sequences, which are blocked with this sequence. Bottom element is the oldest blocked caller
-			BaseSequence* callerSequence;
+			
+			
+			
+			
+			std::vector< Sequence* > callerStack;	//vector with all caller sequences. Top element is latest caller
+			std::vector< Sequence* > callerStackBlocking;	//TODO vector with all sequences, which are blocked with this sequence. Bottom element is the oldest blocked caller
+			Sequence* callerSequence;
 			
 		// 	SequencerException& sequencerException;
 			
@@ -149,6 +155,7 @@ namespace eeros {
 			
 		private:
 			int sequenceID;
+			bool isMainSequence = false;
 // // // 			void checkAllMonitors();
 // // // 			void checkMonitorsOfThisSequence();
 // // // 			void checkMonitorsOfAllCallers();

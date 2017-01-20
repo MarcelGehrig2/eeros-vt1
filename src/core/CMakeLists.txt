@@ -10,6 +10,7 @@ add_eeros_sources(
 	Version.cpp
 	Runnable.cpp
 	Thread.cpp
+	ThreadSequence.cpp
 	EEROSException.cpp
 	Config.cpp
 	SimpleConfig.cpp
