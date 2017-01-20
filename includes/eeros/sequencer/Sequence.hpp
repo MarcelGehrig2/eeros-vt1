@@ -46,7 +46,7 @@ namespace eeros {
 		
 			BaseSequence* getLatestCalledSequence();	
 // // // 			void addMonitor(Monitor* monitor);	//TODO implement
-		// 	void addSequence
+			void addSequence(Sequence* Seq);
 			
 			
 			

@@ -69,7 +69,7 @@ namespace eeros {
 			int getID() const;		//steps allways have ID=-99
 			Sequence* getCallerSequence() const;
 			std::vector< Sequence* > getCallerStack() const;
-			std::vector< Sequence* > getCallerStackBlocking() const;
+			std::vector< Sequence* > getCallerStackBlocking();	//creates callerStackBlocking if it is not already created
 		// 	SequencerException& getSequencerException() const;
 			bool getIsMainSequence();
 			bool setIsMainSequence();
@@ -145,6 +145,8 @@ namespace eeros {
 			
 			std::vector< Sequence* > callerStack;	//vector with all caller sequences. Top element is latest caller
 			std::vector< Sequence* > callerStackBlocking;	//TODO vector with all sequences, which are blocked with this sequence. Bottom element is the oldest blocked caller
+			void createCallerStackBlocking();
+			bool callerStackBlockingCreated = false;
 			Sequence* callerSequence;
 			
 		// 	SequencerException& sequencerException;

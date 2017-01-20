@@ -7,7 +7,7 @@
 
 
 
-// #include <eeros/sequencer/Sequencer.hpp>
+#include <eeros/sequencer/Sequencer.hpp>
 #include <eeros/sequencer/Sequence.hpp>
 #include <eeros/sequencer/BaseSequence.hpp>
 
@@ -17,17 +17,24 @@ using namespace eeros::sequencer;
 Sequence::Sequence(Sequencer& S, Sequence* caller, std::__cxx11::string name)
 : BaseSequence(S, caller)	//TODO TODO
 {
-	S.addSequence(this);	//register this new Sequence-Object in Sequencer
 	
 	static int sequenceCount;
 	sequenceID = sequenceCount++;	//TODO check how many Sequence-Objects of this type are allowed. Maybe singleton.
 	if (name == "") {
-		//TODO Error: empty string is not allowed Stop 
+		log.error() << "All sequences must have a name";
 	} else {
-		//TODO Error if name allready exists
+		for ( Sequence *seq : S.getListOfAllSequences() ) {
+			if ( this->name == seq->getName() ) log.error() << "All sequences must have different names"; 
+		}
 		this->name = name;
 	}
-	log.info() << "Sequence '" << name << "' created";
+	
+	S.addSequence(this);	//register this new Sequence-Object in Sequencer
+	if ( this->getIsBlocking() )
+		log.trace() << "Sequence '" << name << "' created and is blocking";
+	else
+		log.trace() << "Sequence '" << name << "' created and is not blocking";
+	
 }
 
 Sequence::~Sequence()
@@ -71,6 +78,7 @@ int Sequence::operator()()
 {
 	return start();
 }
+
 
 bool Sequence::isStep()
 {
@@ -139,6 +147,7 @@ int Step::start()
 // #include <eeros/sequencer/Sequencer.hpp>
 // #include "SequencerException.hpp"
 // #include "Sequencer.hpp"
+#include <vector>
 #include <thread>
 #include <chrono>
 
@@ -155,13 +164,12 @@ BaseSequence::BaseSequence(Sequencer& S, Sequence* caller)
 		numberOfMainSequence++;
 		if ( numberOfMainSequence > 1 ) 
 			log.error() << "Only one MainSequence is possible. Use 'Sequence(S, caller, name)' to construct a normal sequence";
-		else {
+		else 
 			setIsMainSequence();
-		}
+		
 	}
 	
-	setState("idle");
-	
+	setRunningState(idle);	
 	
 	//get and update callerStack
 	if ( !getIsMainSequence() ) {
@@ -169,9 +177,10 @@ BaseSequence::BaseSequence(Sequencer& S, Sequence* caller)
 		callerStack.push_back(callerSequence);	//add latest caller
 	}
 	
-	//get and update callerStackBlocking
-	//TODO
+	//callerStackBlocking gets created, when getCallerStackBlocking() is called
 	
+	
+
 	
 // // // 	//inherit SequencerException from caller
 // // // 	//TODO if mainSequence no caller exists
@@ -361,9 +370,26 @@ std::vector< Sequence* > BaseSequence::getCallerStack() const
 	return callerStack;
 }
 
-std::vector< Sequence* > BaseSequence::getCallerStackBlocking() const
+std::vector< Sequence* > BaseSequence::getCallerStackBlocking()
 {
+	if ( !callerStackBlockingCreated ) createCallerStackBlocking();
 	return callerStackBlocking;
+}
+
+void BaseSequence::createCallerStackBlocking()
+{
+	std::vector< Sequence* > tempStack;
+	for ( int i = callerStack.size(); i--; ) {	//reverse iteration
+		if ( callerStack[i]->getIsBlocking() ) tempStack.push_back(callerStack[i]);
+		else break;			
+// 		callerStack[i];
+// 		log.info() << "___callerStrack backwards: " << callerStack[i]->getName();
+	}
+	for ( int i = tempStack.size(); i--; ) {	//reverse vector
+		callerStackBlocking.push_back(tempStack[i]);
+		log.info() << "___callerStrackBlocking: " << tempStack[i]->getName();
+	}
+	callerStackBlockingCreated = true;
 }
 
 

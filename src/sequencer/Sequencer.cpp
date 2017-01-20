@@ -10,7 +10,7 @@ using namespace eeros::sequencer;
 
 // int Sequencer::instanceCounter = 0;
 
-void Sequencer::addMainSequence(BaseSequence* mainSeq)
+void Sequencer::addMainSequence(Sequence* mainSeq)
 { 
 	if ( mainSeq->isStep() ) log.error() << "MainSequence has to be a Sequence, not a Step";
 	mainSequence = mainSeq;
@@ -20,10 +20,17 @@ void Sequencer::addMainSequence(BaseSequence* mainSeq)
 
 
 
-void Sequencer::addSequence(BaseSequence* seq)
+void Sequencer::addSequence(Sequence* seq)
 {
+	log.info() << "X__Sequence '" << seq->getName() << "' added";
 	sequenceList.push_back(seq);
 }
+
+std::vector< Sequence* > Sequencer::getListOfAllSequences()
+{
+	return sequenceList;
+}
+
 
 void Sequencer::run()
 {

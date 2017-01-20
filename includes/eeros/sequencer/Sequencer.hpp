@@ -9,6 +9,7 @@
 // #include <condition_variable>
 #include <eeros/core/Thread.hpp>
 #include <eeros/sequencer/BaseSequence.hpp>
+#include <eeros/sequencer/Sequence.hpp>
 
 namespace eeros {
 	namespace sequencer {
@@ -23,6 +24,7 @@ namespace eeros {
 		}
 	
 		class BaseSequence;		//forward declaration
+		class Sequence;
 		
 		
 		class Sequencer : public Thread {
@@ -32,19 +34,19 @@ namespace eeros {
 			
 			void run();
 			
-			void addSequence(BaseSequence* seq);
-			void addMainSequence(BaseSequence* mainSeq);
-			
+			void addSequence(Sequence* seq);
+			void addMainSequence(Sequence* mainSeq);
 			
 			
 			virtual std::string getName() const;
 			virtual state::type getState() const;
 			virtual mode::type getMode() const;
+			std::vector< Sequence* > getListOfAllSequences();
 			
 			
 		private:
-			BaseSequence* mainSequence;
-			std::vector< BaseSequence* > sequenceList;
+			Sequence* mainSequence;
+			std::vector< Sequence* > sequenceList;	//list of all sequences
 			
 			
 			unsigned int id;
