@@ -15,7 +15,7 @@
 // #include <eeros/logger/LogWriter.hpp>
 // #include <eeros/sequencer/Sequencer.hpp>
 // #include <eeros/sequencer/SequenceResult.hpp>
-#include "eeros/core/ThreadSequence.hpp"
+#include <eeros/core/ThreadSequence.hpp>
 // #include <eeros/sequencer/Sequencer.hpp>
 #include <eeros/sequencer/BaseSequence.hpp>
 // #include <eeros/sequencer/Monitor.hpp>
@@ -23,7 +23,6 @@
 namespace eeros {
 	namespace sequencer {
 
-		
 		class BaseSequence;		//forward declaration
 		
 		class Sequence : public ThreadSequence, public BaseSequence {
@@ -68,6 +67,20 @@ namespace eeros {
 			virtual void run();
 			BaseSequence* latestCalledSequence;
 			
+		};
+		
+		
+		
+		
+		
+		class Step : public BaseSequence {
+		public:
+			Step(Sequencer& S, Sequence* caller);
+			
+			virtual int start();
+			virtual int action() = 0;
+			
+			bool isStep() const;
 		};
 	
 	};	//namespace sequencer

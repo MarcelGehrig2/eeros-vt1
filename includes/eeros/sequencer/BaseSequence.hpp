@@ -53,7 +53,6 @@ namespace eeros {
 			void restartSequence();
 			void pauseSequence();
 			
-			virtual bool isStep() const;
 			
 // // // 		// 	void addStopCondition(std::function<bool ()> f);
 // // // 			virtual bool stopCondition();
@@ -65,6 +64,7 @@ namespace eeros {
 		// 	virtual void set(std::string instruction, type value);	//TODO ??? polymorph or string
 			
 			
+			virtual bool isStep() const;
 			void setID(int ID);
 			int getID() const;		//steps allways have ID=-99
 			Sequence* getCallerSequence() const;

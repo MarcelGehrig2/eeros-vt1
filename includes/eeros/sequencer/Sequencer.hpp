@@ -8,7 +8,7 @@
 // #include <mutex>
 // #include <condition_variable>
 #include <eeros/core/Thread.hpp>
-#include <eeros/sequencer/Sequence.hpp>
+#include <eeros/sequencer/BaseSequence.hpp>
 
 namespace eeros {
 	namespace sequencer {

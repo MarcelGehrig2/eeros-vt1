@@ -99,7 +99,32 @@ void Sequence::setName(std::__cxx11::string name)
 
 
 
+////////////////////////////////////////////////////////////////////////////
+//
+//	Step.cpp
+//
+////////////////////////////////////////////////////////////////////////////
 
+
+using namespace eeros;
+using namespace eeros::sequencer;
+
+Step::Step(Sequencer& S, Sequence* caller): BaseSequence(S, caller)
+{
+
+}
+
+
+bool Step::isStep() const
+{
+	return true;
+}
+
+int Step::start()
+{
+	action();
+	return 0;
+}
 
 
 
@@ -456,3 +481,6 @@ bool BaseSequence::setIsMainSequence()
 {
 	isMainSequence = true;
 }
+
+
+
