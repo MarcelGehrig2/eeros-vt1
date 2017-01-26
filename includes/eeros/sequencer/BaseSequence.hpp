@@ -1,54 +1,27 @@
 #ifndef ORG_EEROS_SEQUENCER_BASESEQUENCE_HPP_
 #define ORG_EEROS_SEQUENCER_BASESEQUENCE_HPP_
 
-
-#include <eeros/sequencer/Sequencer.hpp>
-// #include <eeros/sequencer/Sequence.hpp>
-
-// // // #include "Condition.hpp"
-// // // #include "TimeoutCondition.hpp"
-// // // #include "SequencerException.hpp"
-// // // #include "Monitor.hpp"
-// // // #include "Behavior.hpp"
-#include <string>
 #include <vector>
-#include <chrono>
-#include <functional>
+#include <atomic>
 
+#include <eeros/logger/Logger.hpp>
+#include <eeros/logger/LogWriter.hpp>
+#include <eeros/sequencer/EnumeratorsSequencer.hpp>
+#include <eeros/sequencer/MonitorTimeout.hpp>
+#include <eeros/sequencer/ConditionTimeout.hpp>
 
-// BaseSequence is the base class for Sequence and Step
 
 namespace eeros {
 	namespace sequencer {
 		
-		class Sequence;
 		class Sequencer;		//forward declaration
 		class BaseSequence;
-// 		class BaseSequence;		//forward declaration
 		
-		enum runningStateEnum {
-			notSet,
-			idle,
-			running,
-			paused,
-			aborting,
-			aborted,
-			terminated,
-			restartingStep,
-			restarting,
-		};	// terminatedWithWarning, terminatedBecauseCallerMonitor
-			
-		class BaseSequence {
-			
-		// 	friend class eeros::sequencer::Sequencer;
-			
+		class BaseSequence {			
 		public:
-			BaseSequence(Sequencer& S, Sequence* caller);
+			BaseSequence(Sequencer& S, BaseSequence* caller);
 			
-		// 	virtual int operator()(std::string args) = 0;	//has to be implemented in derived class
-// 			int start();	//called bei operator() by derived class
-			
-			
+		// 	virtual int operator()(std::string args) = 0;	//has to be implemented in derived class			
 			
 			void restartSequence();
 			void pauseSequence();
@@ -59,7 +32,6 @@ namespace eeros {
 // // // 			virtual bool checkExitCondition() = 0;
 			
 			virtual int start() = 0;
-			virtual int action() = 0;		//pure virtual function
 			
 		// 	virtual void set(std::string instruction, type value);	//TODO ??? polymorph or string
 			
@@ -67,12 +39,12 @@ namespace eeros {
 			virtual bool isStep() const;
 			void setID(int ID);
 			int getID() const;		//steps allways have ID=-99
-			Sequence* getCallerSequence() const;
-			std::vector< Sequence* > getCallerStack() const;
-			std::vector< Sequence* > getCallerStackBlocking();	//creates callerStackBlocking if it is not already created
+			BaseSequence* getCallerSequence();
+			std::vector< BaseSequence* > getCallerStack() const;
+			std::vector< BaseSequence* > getCallerStackBlocking();	//creates callerStackBlocking if it is not already created
 		// 	SequencerException& getSequencerException() const;
-			bool getIsMainSequence();
-			bool setIsMainSequence();
+			bool getIsMainSequence() const;
+			void setIsMainSequence();
 			
 
 			
@@ -86,6 +58,9 @@ namespace eeros {
 			void setState(std::string state);
 			runningStateEnum getRunningState() const;
 			void setRunningState(runningStateEnum runningState);
+			
+			std::string getName() const;
+			void setName(std::string name);
 		// 	void setCallerRunningState(runningStateEnum runningState);
 
 			
@@ -117,17 +92,20 @@ namespace eeros {
 			
 
 			
+			bool getIsBlocking() const;
 			
 		protected:
 			Sequencer& S;			//reference to singleton Sequencer
 			eeros::logger::Logger<eeros::logger::LogWriter> log;
 
-			int runBlocking();
-			int runNonBlocking();
+			
+			int actionFramework();			//handels different checks like preconditions
+// 			int runBlocking();
+// 			int runNonBlocking();
 			// run mode:
 			void setIsBlocking();		//standard run mode
 			void setIsNonBlocking();
-			bool getIsBlocking() const;
+			
 			
 			int pollingTime;					//in milliseconds for checkPostconditions (including monitors)
 			int nrOfSequenceRepetitions = 1;	//number of repetitions of this sequence; 0==infinite; 1==run only once; 2==run once and repete once
@@ -137,17 +115,18 @@ namespace eeros {
 			int timeoutsInARowCounter = 0;	//TODO when to reset??
 			
 			std::string state;				//TODO use enum,	userdefined
-			runningStateEnum runningState = idle;	
-			bool isBlocking = true;			//standard run mode
+			
+			std::atomic<runningStateEnum> runningState;	
+			std::atomic<bool> isBlocking;			//standard run mode
 			
 			
 			
 			
-			std::vector< Sequence* > callerStack;	//vector with all caller sequences. Top element is latest caller
-			std::vector< Sequence* > callerStackBlocking;	//TODO vector with all sequences, which are blocked with this sequence. Bottom element is the oldest blocked caller
+			std::vector< BaseSequence* > callerStack;	//vector with all caller sequences. Top element is latest caller
+			std::vector< BaseSequence* > callerStackBlocking;	//TODO vector with all sequences, which are blocked with this sequence. Bottom element is the oldest blocked caller
 			void createCallerStackBlocking();
 			bool callerStackBlockingCreated = false;
-			Sequence* callerSequence;
+			BaseSequence* callerSequence;
 			
 		// 	SequencerException& sequencerException;
 			
@@ -155,15 +134,24 @@ namespace eeros {
 // // // 			std::vector< Condition* > postconditions;
 
 			
+			std::string name = "no Name";
+			
 		private:
+// 			auto& cs;	Has to be added by the control engineer for derived sequences
+// 			auto& ss;
+			virtual int action() = 0;		//pure virtual function
 			int sequenceID;
 			bool isMainSequence = false;
+			bool sequenceIsRestarting = false;
 // // // 			void checkAllMonitors();
 // // // 			void checkMonitorsOfThisSequence();
 // // // 			void checkMonitorsOfAllCallers();
 			
 // // // 			auto startTime;
-			double timeout;				//0 = not set or infinite
+			
+			ConditionTimeout conditionTimeout;
+			MonitorTimeout monitorTimeout;
+// 			double timeout;				//0 = not set or infinite
 // // // 			Behavior::enumerator behaviorTimeout;
 // // // 			TimeoutCondition timeoutCondition;
 // // // 			Monitor timeoutMonitor;

@@ -2,13 +2,9 @@
 #define ORG_EEROS_SEQUENCER_SEQUENCER_HPP_
 
 #include <vector>
-// #include <string>
 #include <atomic>
-// #include <vector>
-// #include <mutex>
-// #include <condition_variable>
+
 #include <eeros/core/Thread.hpp>
-#include <eeros/sequencer/BaseSequence.hpp>
 #include <eeros/sequencer/Sequence.hpp>
 
 namespace eeros {
@@ -30,19 +26,19 @@ namespace eeros {
 		class Sequencer : public Thread {
 		public:
 // 			Sequencer();
-		// 	Sequencer(BaseSequence* mainSequence);
-			
-			void run();
+// 			~Sequencer();	//TODO clean everything
 			
 			void addSequence(Sequence* seq);
 			void addMainSequence(Sequence* mainSeq);
 			
+			Sequence* getSequenceByID(int ID);
+			Sequence* getSeqenceByName(std::string name);
 			
+			// Name, State and Mode are included for backwards compatibelity
 			virtual std::string getName() const;
 			virtual state::type getState() const;
 			virtual mode::type getMode() const;
-			std::vector< Sequence* > getListOfAllSequences();
-			
+			std::vector< Sequence* > getListOfAllSequences();			
 			
 		private:
 			Sequence* mainSequence;
@@ -57,4 +53,4 @@ namespace eeros {
 	};	//namespace sequencer
 }; // namespace eeros
 
-#endif // ORG_EEROS_SEQUENCER_SEQUENCE_HPP_
+#endif // ORG_EEROS_SEQUENCER_SEQUENCER_HPP_
