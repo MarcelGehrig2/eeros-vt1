@@ -37,7 +37,8 @@ Monitor::Monitor(BaseSequence* owner, Condition* condition, behaviorEnum behavio
 
 void Monitor::startExceptionSequence()
 {
-	exceptionSequence->start();
+	if ( exceptionSequence != NULL )
+		exceptionSequence->start();
 	//TODO start sequence
 	//TODO function parameter of sequence?
 }
@@ -48,9 +49,24 @@ void Monitor::setBehavior(behaviorEnum behavior)
 	this->behavior = behavior;
 }
 
+behaviorEnum Monitor::getBehavior() const
+{
+	return behavior;
+}
+
+BaseSequence* Monitor::getOwner() const
+{
+	return owner;
+}
+
 void Monitor::setExceptionSequence(BaseSequence* exceptionSequence)
 {
 	this->exceptionSequence = exceptionSequence;
+}
+
+bool Monitor::checkCondition()
+{
+	condition->isTrue();
 }
 
 // void Monitor::setGotToTarget(std::__cxx11::string goToTarget)

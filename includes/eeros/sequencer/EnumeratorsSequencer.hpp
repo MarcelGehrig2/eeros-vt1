@@ -17,7 +17,7 @@ namespace eeros {
 			restarting,
 		};	// terminatedWithWarning, terminatedBecauseCallerMonitor
 		
-		enum behaviorEnum {
+		enum behaviorEnum {		//For Monitors
 // 			notSet,
 			repeteOwnerSequence,			//repete the owner sequence of this monitor
 			repeteCallerOfOwnerSequence,	//repete the caller of the owner of this monitor

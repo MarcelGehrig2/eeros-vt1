@@ -37,8 +37,7 @@ runningState(runningStateEnum::idle), isBlocking(true), pollingTime(100)
 // // // 	//TODO if mainSequence no caller exists
 // // // 	sequencerException = callerSequence->getSequencerException();
 	
-	
-	setPollingTime(10);
+
 	
 	//timeout
 // 	monitorTimeout(this, 
@@ -99,9 +98,13 @@ int BaseSequence::actionFramework() {
 		double firstCheck = true;
 		action();
 		while ( runningState == sequencer::running ) {		//check exitCondition
-			if ( !firstCheck && checkExitCondition() ) runningState = sequencer::terminated;
-			firstCheck = false;
-// 			log.info() << pollingTime;
+			if ( !firstCheck ) {
+				if ( checkExitCondition() ) setRunningState(sequencer::terminated);	//check exitCondition
+				checkTimeoutMonitor();
+				//TODO check Conditions
+			}
+			else firstCheck = false;
+			
 			usleep(pollingTime*1000);
 			
 		}
@@ -390,4 +393,24 @@ bool BaseSequence::getIsMainSequence() const
 void BaseSequence::setIsMainSequence()
 {
 	isMainSequence = true;
+}
+
+
+
+// Check Monitors
+void BaseSequence::checkTimeoutMonitor()
+{
+	checkMonitor(&monitorTimeout);
+}
+
+void BaseSequence::checkMonitor(Monitor* monitor)
+{
+	if ( monitor->checkCondition() == true ) {
+		monitor->startExceptionSequence();
+		switch( monitor->getBehavior() ) {
+			case abortOwnerSequence : 	monitor->getOwner()->setRunningState(aborting);
+										break;
+		}
+	}
+	else return;
 }

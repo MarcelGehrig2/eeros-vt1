@@ -153,6 +153,9 @@ namespace eeros {
 			
 			ConditionTimeout conditionTimeout;
 			MonitorTimeout monitorTimeout;
+			
+			void checkTimeoutMonitor();
+			void checkMonitor(Monitor* monitor);
 // 			double timeout;				//0 = not set or infinite
 // // // 			Behavior::enumerator behaviorTimeout;
 // // // 			TimeoutCondition timeoutCondition;

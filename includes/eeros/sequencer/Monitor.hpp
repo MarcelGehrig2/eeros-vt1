@@ -19,7 +19,12 @@ namespace eeros {
 
 			void setExceptionSequence(BaseSequence* exceptionSequence);	
 			void setBehavior(behaviorEnum behavior);
+			behaviorEnum getBehavior() const;
+			BaseSequence* getOwner() const;
 		// 	void setGotToTarget(std::string goToTarget);
+			
+			bool checkCondition();
+			void startExceptionSequence();
 			
 // 			bool check(BaseSequence* caller);	//returns true if runningState of caller is changed
 			
@@ -36,7 +41,6 @@ namespace eeros {
 			std::string exceptionDescription;
 			
 		private:
-			void startExceptionSequence();
 			
 		};
 

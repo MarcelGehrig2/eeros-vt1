@@ -15,6 +15,7 @@ bool Step::isStep() const
 
 int Step::start()
 {
+	resetTimeout();
 	actionFramework();
 	return 0;
 }
