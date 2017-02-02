@@ -18,15 +18,15 @@ namespace eeros {
 		};	// terminatedWithWarning, terminatedBecauseCallerMonitor
 		
 		enum behaviorEnum {		//For Monitors
+			nothing,					//do nothing. (only exception sequence is called, if available)
 // 			notSet,
-			restartOwner,					//restart the owner sequence or step of this monitor
-			nothing,						//do nothing. (only exception sequence is called, if available)
-// 			restartCallerOfOwnerSequence,	//restart the caller of the owner of this monitor
-// 			restartStep,						//restart step, which detects the exception
 			abortOwner,
-// 			abortCallerofOwnerSequence,
+			restartOwner,				//restart the owner sequence or step of this monitor
+			abortCallerofOwner,
+			restartCallerOfOwner,		//restart the caller of the owner of this monitor
+// 			restartStep,				//restart step, which detects the exception
 // 			abortStep,
-// 			pause,							//pause, till condition==false
+// 			pause,						//pause, till condition==false
 // 			goTo,
 		};
 		

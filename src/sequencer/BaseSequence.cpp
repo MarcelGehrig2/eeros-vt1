@@ -97,12 +97,19 @@ int BaseSequence::actionFramework() {
 	checkActiveException();		//sets RunningState according to activeException
 	
 	do {	//for reastarting
-		if ( getRunningState() == restarting )	setRunningState( running );
+		if ( getRunningState() == restarting ) {	//sequence got restarted
+			setRunningState( running );
+			sequenceIsRestarting = false;
+			resetTimeout();
+			restartCounter++;
+		}
+		else restartCounter = 0;
+		
 		double firstCheck = true;
 		
 		action();
 		
-		while ( runningState == sequencer::running ) {		//check exitCondition
+		while ( runningState == running ) {
 			if ( !firstCheck ) {
 				if ( checkExitCondition() ) 		setRunningState(terminated);	//check exitCondition
 				checkTimeoutMonitor();				//sets activeException if needed
@@ -117,7 +124,7 @@ int BaseSequence::actionFramework() {
 			usleep(pollingTime*1000);
 		}
 	
-	} while ( sequenceIsRestarting == true );
+	} while ( runningState == restarting );
 }
 
 
@@ -227,8 +234,20 @@ void BaseSequence::setIsNonBlocking()
 
 void BaseSequence::setActiveException(Monitor* activeMonitor)
 {
-	activeMonitor->getOwner()->exceptionIsActive = true;
-	activeMonitor->getOwner()->activeException = activeMonitor;
+	switch ( activeMonitor->getBehavior() ) {
+		case abortOwner :
+		case restartOwner :
+			activeMonitor->getOwner()->exceptionIsActive = true;
+			activeMonitor->getOwner()->activeException = activeMonitor;
+			break;
+		case abortCallerofOwner :
+		case restartCallerOfOwner :	
+			activeMonitor->getOwner()->getCallerSequence()->exceptionIsActive = true;
+			activeMonitor->getOwner()->getCallerSequence()->activeException = activeMonitor;
+			break;
+		default : break;
+	}
+	
 }
 
 void BaseSequence::clearActiveException()
@@ -240,25 +259,35 @@ void BaseSequence::clearActiveException()
 void BaseSequence::checkActiveException()
 {
 	if ( exceptionIsActive == true ) {	// this sequence got the order to abort, restart ...
+		log.info() << "___this: " << getName();
 		switch( activeException->getBehavior() ) {
 			case nothing :				break;
 			case abortOwner : 			setRunningState(aborting);
 										break;
 			case restartOwner :			setRunningState(restarting);
 										break;
+			case abortCallerofOwner :	setRunningState(aborting);
+										break;
+			case restartCallerOfOwner : setRunningState(restarting);
+										break;
+			default : break;
 // 			case repeteCallerOfOwner :
 		}
 		clearActiveException();
 	}
 	else {								// a blocked caller got the order to abort, restart ...
-// 		for ( BaseSequence* seq: getCallerStackBlocking() ) {
 		for ( BaseSequence* seq: getCallerStack() ) {
-// 				log.info() << "_______ " << seq->getName();
 			if ( seq->exceptionIsActive == true ) {
+				log.info() << "___blocked caller: " << seq->getName();
 				switch( seq->activeException->getBehavior() ) {
-					case abortOwner :		setRunningState(aborting);
-											break;
-					case restartOwner :		setRunningState(aborting);
+					case abortOwner :
+					case restartOwner :
+					case abortCallerofOwner :
+					case restartCallerOfOwner :
+												setRunningState(aborting);
+												break;
+					default : break;
+											
 				}
 			}
 		}
@@ -346,7 +375,7 @@ int BaseSequence::getID() const
 
 void BaseSequence::restartSequence()
 {
-	setRunningState(sequencer::restarting);
+	setRunningState(restarting);
 	sequenceIsRestarting = true;
 }
 
@@ -481,15 +510,16 @@ void BaseSequence::checkMonitor(Monitor* monitor)
 		switch( monitor->getBehavior() ) {
 			case nothing :				break;
 			case abortOwner : 			monitor->getOwner()->setActiveException( monitor );
-// 										setRunningState(aborting);
-// 										monitor->getOwner()->setRunningState(aborting);
-// 										exceptionIsActive = true;
 										break;
 			case restartOwner :			monitor->getOwner()->setActiveException( monitor );
-// 										setRunningState(aborting);
-// 										monitor->getOwner()->setRunningState(sequencer::restarting);
-// 										exceptionIsActive = true;
 										break;
+			case abortCallerofOwner :	monitor->getOwner()->getCallerSequence()->setActiveException( monitor );
+										break;
+			case restartCallerOfOwner :	monitor->getOwner()->getCallerSequence()->setActiveException( monitor );
+// 				log.info() << "restartCallerOfOwner Owner: " << monitor->getOwner()->getName();
+// 				log.info() << "restartCallerOfOwner Caller: " << monitor->getOwner()->getCallerSequence()->getName();
+										break;
+			default : break;
 // 			case repeteCallerOfOwner :
 		}
 	}

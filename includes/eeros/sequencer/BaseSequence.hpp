@@ -119,7 +119,8 @@ namespace eeros {
 													//sequence restarts are not counted
 // 			int repetitionCounter = 0;		//how many times the sequence got repeted within a single run
 // 			int runCounter = 0;	
-			int timeoutsInARowCounter = 0;	//TODO when to reset??
+// 			int timeoutsInARowCounter = 0;	//TODO when to reset??
+			int restartCounter = 0;
 			
 			std::string state;				//TODO use enum,	userdefined
 			
