@@ -2,6 +2,7 @@
 #define ORG_EEROS_CONTROL_STEP_HPP_
 
 #include <eeros/control/Block1o.hpp>
+#include "../core/System.hpp"
 #include <eeros/core/System.hpp>
 
 namespace eeros {
@@ -11,12 +12,15 @@ namespace eeros {
 		class Step : public Block1o<T> {
 			
 		public:
-			Step(T initValue = 0, T stepHeight = 1, double delayTime = 1) {
-				
+			Step(T initValue = 0, T stepHeight = 1, double delayTime = 1)  {
+				setInitValue(initValue);
+				setStepHeight(stepHeight);
+				setDelayTime(delayTime);
 			}
 			
 			
 			virtual void run() {
+				startTime = System::getTimeNs();
 				if(first) {
 					stepTime += System::getTime();
 					this->out.getSignal().setValue(initValue);
@@ -46,6 +50,7 @@ namespace eeros {
 				this->stepTime = delayTime;
 			}
 
+			uint64_t startTime;
 		protected:
 			T initValue;
 			T stepHeight;

@@ -5,6 +5,9 @@
 #include <string>
 #include <eeros/core/Runnable.hpp>
 
+#include <eeros/logger/Logger.hpp>
+#include <eeros/logger/LogWriter.hpp>
+
 namespace eeros {
 	namespace control {
 
@@ -19,6 +22,7 @@ namespace eeros {
 
 			virtual void run();
 			
+			eeros::logger::Logger<eeros::logger::LogWriter> log;
 		private:
 			std::string name;
 			double period;

@@ -4,7 +4,7 @@ using namespace eeros;
 using namespace eeros::sequencer;
 
 ConditionTimeout::ConditionTimeout(Sequencer& seq)
-: Condition(seq)
+: Condition(seq), timeout(0)
 { }
 
 bool ConditionTimeout::validate()
@@ -12,7 +12,7 @@ bool ConditionTimeout::validate()
 	if ( timeout == 0 ) return false;		//timeout is not activated
 	
 	if ( started == false ) {				//first call
-		restartTimer();
+		resetTimeout();
 		return false;
 	}
 	
@@ -22,12 +22,12 @@ bool ConditionTimeout::validate()
 	else return false;
 }
 
-void ConditionTimeout::setTime(double timeInSec)
+void ConditionTimeout::setTimeoutTime(double timeInSec)
 {
-	this->timeout = timeInSec;
+	timeout = timeInSec;
 }
 
-void ConditionTimeout::restartTimer()
+void ConditionTimeout::resetTimeout()
 {
 	started = true;
 	startTime = std::chrono::steady_clock::now();

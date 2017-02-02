@@ -1,12 +1,13 @@
 #include <eeros/sequencer/BaseSequence.hpp>
 #include <eeros/sequencer/EnumeratorsSequencer.hpp>
+#include <unistd.h>
 
 using namespace eeros;
 using namespace eeros::sequencer;
 
 BaseSequence::BaseSequence(Sequencer& S, BaseSequence* caller)
 : S(S), callerSequence(caller), conditionTimeout(S), monitorTimeout(this, &conditionTimeout, behaviorEnum::abortOwnerSequence),
-runningState(runningStateEnum::idle), isBlocking(true)
+runningState(runningStateEnum::idle), isBlocking(true), pollingTime(100)
 
 { 
 
@@ -86,11 +87,24 @@ runningState(runningStateEnum::idle), isBlocking(true)
 // // // 
 // // // }
 
+bool BaseSequence::checkExitCondition()
+{
+	return true;
+}
+
+
 int BaseSequence::actionFramework() {
-	
+	runningState = sequencer::running;
 	do {
-	
+		double firstCheck = true;
 		action();
+		while ( runningState == sequencer::running ) {		//check exitCondition
+			if ( !firstCheck && checkExitCondition() ) runningState = sequencer::terminated;
+			firstCheck = false;
+// 			log.info() << pollingTime;
+			usleep(pollingTime*1000);
+			
+		}
 	
 	} while ( sequenceIsRestarting == true );
 }
@@ -345,28 +359,27 @@ void BaseSequence::restartSequence()
 // // // }
 
 
-// // // // Timeout	(is a monitor)
-// // // // ////////////////////////////////////////////////////////////////////////////
-// // // 
-// // // void BaseSequence::setTimeoutTime(double timeoutInSec)
-// // // {
-// // // 	timeoutCondition.setTime(timeoutInSec);
-// // // }
-// // // 
-// // // void BaseSequence::setTimeoutBehavior(Behavior::enumerator behavior)
-// // // {
-// // // 	timeoutMonitor.setBehavior(behavior);
-// // // }
-// // // 
-// // // void BaseSequence::setTimeoutExceptionSequence(Sequence* sequence)
-// // // {
-// // // 	timeoutMonitor.setExceptionSequence(sequence);
-// // // }
-// // // 
-// // // void BaseSequence::resetTimeout()
-// // // {
-// // // 	timeoutCondition.resetTimeout();
-// // // }
+// Timeout	(is a monitor)
+// ////////////////////////////////////////////////////////////////////////////
+void BaseSequence::setTimeoutTime(double timeoutInSec)
+{
+	conditionTimeout.setTimeoutTime(timeoutInSec);
+}
+
+void BaseSequence::resetTimeout()
+{
+	conditionTimeout.resetTimeout();
+}
+
+void BaseSequence::setTimeoutBehavior(behaviorEnum behavior)
+{
+	monitorTimeout.setBehavior(behavior);
+}
+
+void BaseSequence::setTimeoutExceptionSequence(BaseSequence* sequence)
+{
+	monitorTimeout.setExceptionSequence(sequence);
+}
 
 
 bool BaseSequence::getIsMainSequence() const

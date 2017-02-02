@@ -26,6 +26,8 @@ void TimeDomain::run() {
 }
 
 void TimeDomain::addBlock(eeros::Runnable* block) {
+	log.info() << "block added";
+	block->run();
 	blocks.push_back(block);
 }
 

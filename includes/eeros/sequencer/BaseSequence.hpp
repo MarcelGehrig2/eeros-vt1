@@ -32,6 +32,7 @@ namespace eeros {
 // // // 			virtual bool checkExitCondition() = 0;
 			
 			virtual int start() = 0;
+			virtual bool checkExitCondition();
 			
 		// 	virtual void set(std::string instruction, type value);	//TODO ??? polymorph or string
 			
@@ -75,10 +76,10 @@ namespace eeros {
 
 			// Timeout
 			// ////////////////////////////////////////////////////////////////////////
-// // // 			void setTimeoutTime(double timeoutInSec);		//in seconds. For this sequence
-// // // 			void setTimeoutBehavior(Behavior::enumerator behavior);	//default is
-// // // 			void setTimeoutExceptionSequence(BaseSequence* sequence);
-// // // 			void resetTimeout();
+			void setTimeoutTime(double timeoutInSec);		//in seconds. For this sequence
+			void resetTimeout();
+			void setTimeoutBehavior(behaviorEnum behavior);	//default is
+			void setTimeoutExceptionSequence(BaseSequence* sequence);
 			
 
 		// 	
@@ -91,7 +92,6 @@ namespace eeros {
 // 			eeros::logger::Logger<eeros::logger::LogWriter> log;
 			
 
-			
 			bool getIsBlocking() const;
 			
 		protected:
@@ -116,8 +116,10 @@ namespace eeros {
 			
 			std::string state;				//TODO use enum,	userdefined
 			
-			std::atomic<runningStateEnum> runningState;	
-			std::atomic<bool> isBlocking;			//standard run mode
+// 			std::atomic<runningStateEnum> runningState;	
+// 			std::atomic<bool> isBlocking;			//standard run mode
+			runningStateEnum runningState;	
+			bool isBlocking;			//standard run mode
 			
 			
 			

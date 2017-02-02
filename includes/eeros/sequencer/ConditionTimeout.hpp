@@ -14,8 +14,8 @@ namespace eeros {
 			
 			bool validate();
 			
-			void setTime(double timeInSec);	//0 = not set or infinite
-			void restartTimer();
+			void setTimeoutTime(double timeInSec);	//0 = not set or infinite
+			void resetTimeout();
 			
 			
 		private:

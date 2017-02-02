@@ -4,6 +4,12 @@
 using namespace eeros;
 using namespace eeros::sequencer;
 
+Sequencer::Sequencer()
+: SS(NULL) { }
+
+Sequencer::Sequencer(SafetySystem* SS)
+: SS(SS) { }
+
 void Sequencer::addSequence(Sequence* seq)
 {
 	log.trace() << "Sequence '" << seq->getName() << "' added";
@@ -15,6 +21,12 @@ void Sequencer::addMainSequence(Sequence* mainSeq)
 	if ( mainSeq->isStep() ) log.error() << "MainSequence has to be a Sequence, not a Step";
 	mainSequence = mainSeq;
 	mainSequence->startMainSequence();
+}
+
+Sequence* Sequencer::getMainSequence()
+{
+	if( mainSequence == NULL ) log.error() << "MainSequence not set in Sequencer";
+	return mainSequence;
 }
 
 Sequence* Sequencer::getSequenceByID(int ID)
@@ -33,6 +45,17 @@ Sequence* Sequencer::getSeqenceByName(std::__cxx11::string name)
 	}
 	log.error() << "No sequence with name '" << name << "' found.";
 	return NULL;
+}
+
+void Sequencer::setSafetySystem(SafetySystem* SS)
+{
+	this->SS = SS;
+}
+
+SafetySystem* Sequencer::getSafetySystem()
+{
+	if( SS == NULL ) log.error() << "SafetySystem not set in Sequencer";
+	return SS;
 }
 
 std::string Sequencer::getName() const

@@ -23,6 +23,7 @@ namespace eeros {
 			virtual int action() = 0;
 			int start();
 			int startMainSequence();
+			bool sleepMSec(int msec);
 			
 			bool isStep();
 		

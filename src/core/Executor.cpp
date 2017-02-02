@@ -50,6 +50,7 @@ namespace {
 	void createThreads(Logger &log, std::vector<task::Periodic> &tasks, task::Periodic &baseTask, std::vector<std::shared_ptr<TaskThread>> &threads, task::HarmonicTaskList &output) {
 		for (task::Periodic &t: tasks) {
 			createThread(log, t, baseTask, threads, output.tasks);
+			log.info() << t.getName() << "________task created";
 		}
 	}
 
@@ -207,6 +208,7 @@ void Executor::run() {
 	log.trace() << "starting periodic execution";
 
 	auto next_cycle = std::chrono::steady_clock::now() + seconds(period);
+// 	log.info() << taskList.tasks.
 	while (running) {
 		std::this_thread::sleep_until(next_cycle);
 

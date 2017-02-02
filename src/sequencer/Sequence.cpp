@@ -7,7 +7,7 @@ using namespace eeros::sequencer;
 
 Sequence::Sequence(Sequencer& S, std::__cxx11::string name)
 : Sequence(S, NULL, name)
-{ }
+{log.info() << "tralala"; }
 
 
 Sequence::Sequence(Sequencer& S, BaseSequence* caller, std::__cxx11::string name)
@@ -74,6 +74,10 @@ int Sequence::startMainSequence()
 	cv.notify_one();		//starts actionFramework() in thread
 }
 
+bool Sequence::sleepMSec(int msec)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds(msec));
+}
 
 bool Sequence::isStep()
 {

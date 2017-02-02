@@ -21,18 +21,25 @@ namespace eeros {
 	
 		class BaseSequence;		//forward declaration
 		class Sequence;
+		class SafetySystem;
 		
 		
 		class Sequencer : public Thread {
 		public:
+			Sequencer();
+			Sequencer(SafetySystem* SS);
 // 			Sequencer();
 // 			~Sequencer();	//TODO clean everything
 			
 			void addSequence(Sequence* seq);
 			void addMainSequence(Sequence* mainSeq);
+			Sequence* getMainSequence();
 			
 			Sequence* getSequenceByID(int ID);
 			Sequence* getSeqenceByName(std::string name);
+			
+			void setSafetySystem(SafetySystem* SS);
+			SafetySystem* getSafetySystem();
 			
 			// Name, State and Mode are included for backwards compatibelity
 			virtual std::string getName() const;
@@ -44,6 +51,7 @@ namespace eeros {
 			Sequence* mainSequence;
 			std::vector< Sequence* > sequenceList;	//list of all sequences
 			
+			SafetySystem* SS;
 			
 			unsigned int id;
 			std::atomic<state::type> state;

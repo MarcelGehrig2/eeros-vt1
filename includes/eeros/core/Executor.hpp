@@ -22,7 +22,7 @@ namespace eeros {
 	class Executor : public Runnable {
 		Executor();
 	public:
-		static constexpr int basePriority = 49;
+		static constexpr int basePriority = 10;
 
 		virtual ~Executor();
 		static Executor& instance();
