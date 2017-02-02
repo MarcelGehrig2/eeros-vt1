@@ -50,8 +50,6 @@ namespace eeros {
 
 			
 			//TODO  moinitor exception timeout?....
-			// Monitors
-			// ////////////////////////////////////////////////////////////////////////
 			void setPollingTime(int timeInMilliseconds);
 // // // 			void addMonitor(Monitor* monitor);
 			
@@ -73,7 +71,13 @@ namespace eeros {
 		// 	bool checkTimeoutOfThisSequence();
 		// --> replaced with timeoutMonitor
 			
-
+		
+			// Monitors
+			// ////////////////////////////////////////////////////////////////////////
+			std::vector< Monitor* > monitors;
+			void addMonitor( Monitor* monitor);
+			std::vector< Monitor* > getMonitors() const;
+			
 			// Timeout
 			// ////////////////////////////////////////////////////////////////////////
 			void setTimeoutTime(double timeoutInSec);		//in seconds. For this sequence
@@ -106,12 +110,15 @@ namespace eeros {
 			void setIsBlocking();		//standard run mode
 			void setIsNonBlocking();
 			
+			void setActiveException( Monitor* activeMonitor );
+			void clearActiveException();
+			void checkActiveException();
 			
 			int pollingTime;					//in milliseconds for checkPostconditions (including monitors)
-			int nrOfSequenceRepetitions = 1;	//number of repetitions of this sequence; 0==infinite; 1==run only once; 2==run once and repete once
+// 			int nrOfSequenceRepetitions = 1;	//number of repetitions of this sequence; 0==infinite; 1==run only once; 2==run once and repete once
 													//sequence restarts are not counted
-			int repetitionCounter = 0;		//how many times the sequence got repeted within a single run
-			int runCounter = 0;	
+// 			int repetitionCounter = 0;		//how many times the sequence got repeted within a single run
+// 			int runCounter = 0;	
 			int timeoutsInARowCounter = 0;	//TODO when to reset??
 			
 			std::string state;				//TODO use enum,	userdefined
@@ -145,6 +152,9 @@ namespace eeros {
 			int sequenceID;
 			bool isMainSequence = false;
 			bool sequenceIsRestarting = false;
+			
+			bool exceptionIsActive = false;
+			Monitor* activeException;
 // // // 			void checkAllMonitors();
 // // // 			void checkMonitorsOfThisSequence();
 // // // 			void checkMonitorsOfAllCallers();
@@ -155,6 +165,7 @@ namespace eeros {
 			MonitorTimeout monitorTimeout;
 			
 			void checkTimeoutMonitor();
+			void checkMonitorsOfBlockedCallers();
 			void checkMonitor(Monitor* monitor);
 // 			double timeout;				//0 = not set or infinite
 // // // 			Behavior::enumerator behaviorTimeout;

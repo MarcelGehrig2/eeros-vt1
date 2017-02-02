@@ -19,14 +19,15 @@ namespace eeros {
 		
 		enum behaviorEnum {		//For Monitors
 // 			notSet,
-			repeteOwnerSequence,			//repete the owner sequence of this monitor
-			repeteCallerOfOwnerSequence,	//repete the caller of the owner of this monitor
-			repeteStep,						//repete step, which detects the exception
-			abortOwnerSequence,
-			abortCallerofOwnerSequence,
-			abortStep,
-			pause,							//pause, till condition==false
-			goTo,
+			restartOwner,					//restart the owner sequence or step of this monitor
+			nothing,						//do nothing. (only exception sequence is called, if available)
+// 			restartCallerOfOwnerSequence,	//restart the caller of the owner of this monitor
+// 			restartStep,						//restart step, which detects the exception
+			abortOwner,
+// 			abortCallerofOwnerSequence,
+// 			abortStep,
+// 			pause,							//pause, till condition==false
+// 			goTo,
 		};
 		
 	};	//namespace sequencer

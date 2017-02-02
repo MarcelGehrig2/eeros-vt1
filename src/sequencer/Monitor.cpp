@@ -66,7 +66,7 @@ void Monitor::setExceptionSequence(BaseSequence* exceptionSequence)
 
 bool Monitor::checkCondition()
 {
-	condition->isTrue();
+	return condition->isTrue();
 }
 
 // void Monitor::setGotToTarget(std::__cxx11::string goToTarget)
