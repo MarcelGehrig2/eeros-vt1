@@ -23,34 +23,25 @@ namespace eeros {
 			virtual int action() = 0;
 			int start();
 			int startMainSequence();
-			bool sleepMSec(int msec);
+// 			bool sleepMSec(int msec);	//TODO Check Monitors (of callers) while sleeping!
 			
 			bool isStep();
 		
-			BaseSequence* getLatestCalledSequence();	
-// // // 			void addMonitor(Monitor* monitor);	//TODO implement
-			void addSequence(Sequence* Seq);
+// 			BaseSequence* getLatestCalledSequence();
 			
 			
 			
 	// 	private:
-// 			std::string name;
-			int sequenceID = 0;
-// 			static int sequenceCount;	//TODO works like intended? counts all created sequences
-			
-// 			eeros::logger::Logger<eeros::logger::LogWriter> log; is in BaseSequence
-// 			Sequencer& S; is in BaseSequence
+			int sequenceID;
 			
 			std::mutex m;
 			std::condition_variable cv;
-// 			Sequence* caller; is in BaseSequence
-// 			bool blocking = false;
 			
 		protected:
 			
 		private:
 			void run();
-			BaseSequence* latestCalledSequence;
+// 			BaseSequence* latestCalledSequence;
 			
 		};
 		

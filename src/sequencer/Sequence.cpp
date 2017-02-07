@@ -11,11 +11,11 @@ Sequence::Sequence(Sequencer& S, std::__cxx11::string name)
 
 
 Sequence::Sequence(Sequencer& S, BaseSequence* caller, std::__cxx11::string name)
-: BaseSequence(S, caller)	//TODO TODO
+: BaseSequence(S, caller)
 {
 	
 	static int sequenceCount;
-	sequenceID = sequenceCount++;	//TODO check how many Sequence-Objects of this type are allowed. Maybe singleton.
+	setID(sequenceCount++);	//TODO check how many Sequence-Objects of this type are allowed. Maybe singleton.
 	if (name == "") {
 		log.error() << "All sequences must have a name";
 	} else {
@@ -52,14 +52,11 @@ void Sequence::run()	//runs in thread
 int Sequence::start()
 {
 	resetTimeout();
-// 	std::this_thread::sleep_for(std::chrono::milliseconds(100));	//TODO better way to enssure, Sequence is created
 	
-	
-	log.trace() << "Sequence '" << name << "' start() started. CallerSequence: " << callerSequence->getName();
 	if ( getIsBlocking() ) {	//starts action() blocking
-		log.trace() << "Sequence '" << name << "' blocking action()";
+		log.trace() << "Sequence '" << name << "' blocking action(). CallerSequence: " << callerSequence->getName();
 		actionFramework();				//action gets overwritten by child class
-		log.trace() << "Sequence '" << name << "' blocking action() ended";
+		log.trace() << "Sequence '" << name << "' blocking action() ended. CallerSequence: " << callerSequence->getName();
 	}
 	else {
 		log.trace() << "Sequence '" << name << "' nonblocking action()";
@@ -75,21 +72,19 @@ int Sequence::startMainSequence()
 	cv.notify_one();		//starts actionFramework() in thread
 }
 
-bool Sequence::sleepMSec(int msec)
-{
-	std::this_thread::sleep_for(std::chrono::milliseconds(msec));
-}
+// bool Sequence::sleepMSec(int msec)
+// {
+// 	std::this_thread::sleep_for(std::chrono::milliseconds(msec));	//TODO Check Monitors (of callers) while sleeping!
+// }
 
 bool Sequence::isStep()
 {
 	return false;
 }
 
-BaseSequence* Sequence::getLatestCalledSequence()
-{
-	return latestCalledSequence;
-}
-
-
+// BaseSequence* Sequence::getLatestCalledSequence()
+// {
+// 	return latestCalledSequence;
+// }
 
 

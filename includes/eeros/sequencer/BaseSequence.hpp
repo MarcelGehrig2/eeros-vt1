@@ -24,7 +24,11 @@ namespace eeros {
 		// 	virtual int operator()(std::string args) = 0;	//has to be implemented in derived class			
 			
 			void restartSequence();
-			void pauseSequence();
+			
+// 			void pauseSequence();
+// 			void resumeSequence();
+// 			void setPrePauseSequence(BaseSequence* Sequence);
+// 			void setPostPauseSequence(BaseSequence* Sequence);
 			
 			
 // // // 		// 	void addStopCondition(std::function<bool ()> f);
@@ -32,6 +36,7 @@ namespace eeros {
 // // // 			virtual bool checkExitCondition() = 0;
 			
 			virtual int start() = 0;
+			virtual bool checkPreCondition();
 			virtual bool checkExitCondition();
 			
 		// 	virtual void set(std::string instruction, type value);	//TODO ??? polymorph or string
@@ -53,8 +58,8 @@ namespace eeros {
 			void setPollingTime(int timeInMilliseconds);
 // // // 			void addMonitor(Monitor* monitor);
 			
-			std::string getState() const;
-			void setState(std::string state);
+// 			std::string getState() const;
+// 			void setState(std::string state);
 			runningStateEnum getRunningState() const;
 			void setRunningState(runningStateEnum runningState);
 			
@@ -85,15 +90,6 @@ namespace eeros {
 			void setTimeoutBehavior(behaviorEnum behavior);	//default is
 			void setTimeoutExceptionSequence(BaseSequence* sequence);
 			
-
-		// 	
-		// protected:
-		// 	virtual void yield();
-		// 	
-		// 	virtual void init();
-		// 	virtual void exit();
-		// 	
-// 			eeros::logger::Logger<eeros::logger::LogWriter> log;
 			
 
 			bool getIsBlocking() const;
@@ -122,7 +118,7 @@ namespace eeros {
 // 			int timeoutsInARowCounter = 0;	//TODO when to reset??
 			int restartCounter = 0;
 			
-			std::string state;				//TODO use enum,	userdefined
+// 			std::string state;				//TODO use enum,	userdefined
 			
 // 			std::atomic<runningStateEnum> runningState;	
 // 			std::atomic<bool> isBlocking;			//standard run mode
@@ -162,12 +158,15 @@ namespace eeros {
 			
 // // // 			auto startTime;
 			
-			ConditionTimeout conditionTimeout;
 			MonitorTimeout monitorTimeout;
+			ConditionTimeout conditionTimeout;
 			
-			void checkTimeoutMonitor();
+// 			void checkTimeoutMonitor();
 			void checkMonitorsOfBlockedCallers();
+			void checkMonitorsOfThisSequence();
 			void checkMonitor(Monitor* monitor);
+			
+			// Pause
 // 			double timeout;				//0 = not set or infinite
 // // // 			Behavior::enumerator behaviorTimeout;
 // // // 			TimeoutCondition timeoutCondition;

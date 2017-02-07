@@ -5,7 +5,12 @@ using namespace eeros;
 using namespace eeros::sequencer;
 
 Sequencer::Sequencer()
-: SS(NULL) { }
+: SS(NULL)
+{
+	static int sequencerCounter;
+	sequencerCounter++;
+	if ( sequencerCounter > 1 ) log.error() << "______Only one sequencer object is allowed";
+}
 
 Sequencer::Sequencer(SafetySystem* SS)
 : SS(SS) { }
@@ -14,6 +19,9 @@ void Sequencer::addSequence(Sequence* seq)
 {
 	log.trace() << "Sequence '" << seq->getName() << "' added";
 	sequenceList.push_back(seq);
+// 	for ( Sequence *seq : getListOfAllSequences() ) {
+// 		log.info() << "SSSSS '" << seq->getName() << "' added";
+// 	}
 }
 
 void Sequencer::addMainSequence(Sequence* mainSeq)

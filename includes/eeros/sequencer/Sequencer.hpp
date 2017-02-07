@@ -31,6 +31,9 @@ namespace eeros {
 // 			Sequencer();
 // 			~Sequencer();	//TODO clean everything
 			
+// 			pauseSequencer();
+// 			resumeSequencer();
+			
 			void addSequence(Sequence* seq);
 			void addMainSequence(Sequence* mainSeq);
 			Sequence* getMainSequence();
@@ -53,6 +56,7 @@ namespace eeros {
 			
 			SafetySystem* SS;
 			
+			// Name, State and Mode are included for backwards compatibelity
 			unsigned int id;
 			std::atomic<state::type> state;
 			std::atomic<mode::type> mode;

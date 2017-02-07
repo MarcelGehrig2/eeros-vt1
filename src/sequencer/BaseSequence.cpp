@@ -20,81 +20,43 @@ runningState(runningStateEnum::idle), isBlocking(true), pollingTime(100)
 			setIsMainSequence();
 	}
 	
-	setRunningState(idle);	
 	
 	//get and update callerStack
 	if ( !getIsMainSequence() ) {
 		callerStack = callerSequence->getCallerStack();
 		callerStack.push_back(callerSequence);	//add latest caller
+		
+		
+// 		for ( BaseSequence* seq: getCallerStack() ) {
+// 			log.info() << "___callerStrack : " << seq->getName();
+// 		}
 	}
 	
 	//callerStackBlocking gets created, when getCallerStackBlocking() is called
 	
 	addMonitor( &monitorTimeout );
 
-	
-// // // 	//inherit SequencerException from caller
-// // // 	//TODO if mainSequence no caller exists
-// // // 	sequencerException = callerSequence->getSequencerException();
-	
-
-	
-	//timeout
-// 	monitorTimeout(this, 
-// // // 	timeout = 0;	//0 == not set == no timeout
-// // // 	behaviorTimeout = Behavior::abortOwnerSequence;
-// // // 	timeoutCondition( S, timeout );
-// // // 	timeoutMonitor( this, &timeoutCondition, behaviorTimeout );
-// // // 	addMonitor( &timeoutMonitor ) ;
 }
 
-// // // int BaseSequence::runBlocking()
-// // // {
-// // // 	setIsBlocking();
-// // // 	
-// // // 	// 1 Check precondition
-// // // 	// ////////////////////
-// // // 	bool preconditionsPass = checkPreconditions();	//including monitors of all caller
-// // // 	
-// // // 	
-// // // 	if( preconditionsPass ) {		//checkPreconditions did not change the runningState
-// // // 	
-// // // 		// 2 Action
-// // // 		// ////////
-// // // 		action();		//Send action to Controlsystem and or Safetysystem.
-// // // 						//Send signal to other sequence
-// // // 						//Star a Sequence
-// // // 		
-// // // 		
-// // // 		
-// // // 		
-// // // 		// 3 Check postcondition
-// // // 		// /////////////////////
-// // // 		while(runningState == "running") {
-// // // 			if(runningState == "running") checkExitCondition();	//used for normal stop of this step/sequence 
-// // // 			
-// // // 			if(runningState == "running") checkTimeoutOfAllBlockedCallers();	//if caller timeout -> error thrown
-// // // 			if(runningState == "running") checkTimeoutOfThisSequence(); //if true -> timeoutAction()
-// // // 			
-// // // 			if(runningState == "running") checkMonitorsOfAllCallers();		//of all callers
-// // // 			if(runningState == "running") checkMonitorsOfThisSequence();	//of all callers
-// // // 		// 	checkPause();			//TODO or us a global Condition instead?
-// // // 		// 	checkStop();			//TODO a condition as well?
-// // // 			std::this_thread::sleep_for (std::chrono::milliseconds(pollingTime));
-// // // 		}
-// // // 	}
-// // // 
-// // // }
 
 bool BaseSequence::checkExitCondition()
 {
 	return true;
 }
 
+bool BaseSequence::checkPreCondition()
+{
+	return true;
+}
+
+
 
 int BaseSequence::actionFramework() {
 	setRunningState( running );
 	checkActiveException();		//sets RunningState according to activeException
+	
+	if ( callerSequence != NULL )
+		if ( (runningState == running) && (callerSequence->getRunningState() == restarting) ) setRunningState( aborting );
 	
 	do {	//for reastarting
 		if ( getRunningState() == restarting ) {	//sequence got restarted
@@ -105,75 +67,41 @@ int BaseSequence::actionFramework() {
 		}
 		else restartCounter = 0;
 		
-		double firstCheck = true;
-		
-		action();
-		
-		while ( runningState == running ) {
-			if ( !firstCheck ) {
-				if ( checkExitCondition() ) 		setRunningState(terminated);	//check exitCondition
-				checkTimeoutMonitor();				//sets activeException if needed
-				checkMonitorsOfBlockedCallers();	//sets activeException if needed
-			}
-			else firstCheck = false;
-			
-			checkActiveException();					//sets RunningState according to activeException
-			
-			
+		if( runningState == paused ) {	//has to be alerted by an other sequence
 			
 			usleep(pollingTime*1000);
 		}
+		
+		double firstCheck = true;
+		
+		if ( checkPreCondition() ) {
+		
+			action();
+			
+			while ( runningState == running ) {
+				if ( !firstCheck ) {
+					if ( checkExitCondition() ) 		setRunningState(terminated);	//check exitCondition
+// 					checkTimeoutMonitor();				//sets activeException if needed
+					if ( runningState != terminated ) {
+						checkMonitorsOfThisSequence();		//sets activeException if needed
+						checkMonitorsOfBlockedCallers();	//sets activeException if needed
+					}
+				}
+				else firstCheck = false;
+				
+				checkActiveException();					//sets RunningState according to activeException
+				if ( runningState == running ) usleep(pollingTime*1000);
+			}
+		}
+		else {
+			setRunningState( terminated );
+		}
 	
 	} while ( runningState == restarting );
-}
-
-
-
-// // // int BaseSequence::run()
-// // // {
-// 	bool execute = true;
-// 	if (	   ( callerSequence->getRunningState() == terminated )
-// 			&& ( true ) );
 	
-// // // 	// if sequencerException is active: abort or repete sequence, depending on exception behavior:
-// // // 	sequencerException->setRunningStateOfThisSequence(this);
-// // // 
-// // // 	
-// // // 	if ( runningState != aborting ) {
-// // // 		runCounter++;
-// // // 		
-// // // 		if ( callerSequence->runningState == running ) {
-// // // 			repetitionCounter=0;
-// // // 			
-// // // 			// while loop, if multiple repetition OR this sequence is RESTARTED
-// // // 			while ( ( nrOfSequenceRepetitions==0 ) || (repetitionCounter <= nrOfSequenceRepetitions) ) {
-// // // 				repetitionCounter ++;
-// // // 				
-// // // 				
-// // // 				//RUN
-// // // 				if (getIsBlocking()) { runBlocking(); }
-// // // 				else { runNonBlocking(); }
-// // // 				
-// // // 				
-// // // 				// if sequencerException is active: abort or repete sequence, depending on exception behavior:
-// // // 				sequencerException->setRunningStateOfThisSequence(this);
-// // // 				if ( runningState == restarting ) {
-// // // 					runningState = running;
-// // // 				}
-// // // 				if ( runningState == aborting )	break;
-// // // 			}
-// // // 		}
-// // // 		
-// // // 		if ( runningState == aborting ) runningState = aborted;
-// // // 		else runningState = terminated;	//TODO terminated with warning/error?
-// // // 	}
-// // /*	
-// // }*/
-
-// int BaseSequence::start()
-// {
-// 	run();
-// }
+	if ( runningState == aborting ) setRunningState(aborted);
+	else setRunningState( terminated );
+}
 
 
 
@@ -299,15 +227,15 @@ bool BaseSequence::getIsBlocking() const
 	return isBlocking;
 }
 
-std::string BaseSequence::getState() const
-{
-	return state;
-}
-
-void BaseSequence::setState(std::string state)
-{
-	this->state = state;
-}
+// std::string BaseSequence::getState() const
+// {
+// 	return state;
+// }
+// 
+// void BaseSequence::setState(std::string state)
+// {
+// 	this->state = state;
+// }
 
 runningStateEnum BaseSequence::getRunningState() const
 {
@@ -375,68 +303,21 @@ int BaseSequence::getID() const
 
 void BaseSequence::restartSequence()
 {
+// 	log.info() << "void BaseSequence::restartSequence() 1";
 	setRunningState(restarting);
 	sequenceIsRestarting = true;
+// 	log.info() << "void BaseSequence::restartSequence() 2";
 }
 
-
-
-// // // //Timeout handling
-// // // bool BaseSequence::checkTimeoutOfThisSequence()
-// // // {
-// // // 	//TODO this sequences timout, detected by a sub sequence. now clear exception and do timeout action. 
-// // // 	//clear error, if it is caused by a called seqeuence, beacause of the timeout of this seqeuence
-// // // 	if ( S.getSeqencerException()->isSet() ) {
-// // // 		if ( ( S.getSeqencerException()->getRootSequence() == this ) && ( S.getSeqencerException()->getExceptionDescription() == "timeout" ) ) {
-// // // 			S.getSeqencerException()->clearException();
-// // // 		}
-// // // 	}
-// // // 	
-// // // // 	return checkTimeout(this);	//TODO
-// // // }
-// // // 
-// // // bool BaseSequence::checkTimeout(int sequenceID)
-// // // {
-// // // 	BaseSequence* sequence = S.getSequenceByID(sequenceID);
-// // // 	return checkTimeout(&sequence);
-// // // }
-// // // 
-// // // bool BaseSequence::checkTimeout(BaseSequence* sequence)
-// // // {
-// // // 	//TODO implement Timeout check
-// // // 	if (sequence->timeout > 0) {
-// // // 		auto now = std::chrono::steady_clock::now();
-// // // 		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - sequence->startTime) > sequence->timeout) return true;
-// // // 		else return false;
-// // // 	}
-// // // 	// 	sequence->getStartOfTimeout;
-// // // // 	sequence->getTotalTimeoutTime;
-// // // }
-// // // 
-// // // 	
-// // // bool BaseSequence::checkTimeoutOfAllBlockedCallers()	//does not check timeout of "this"
-// // // {
-// // // 	//TODO if callerTimeout happens, throw sequencer exception. the caller sequence handles than the timeout action.
-// // // 	//TODO non blocking seqeuences should not inherit timeouts --> outer iterator
-// // // 	//TODO how do the list iterator exactly work?
-// // // 	//lates (newest) caller of a non blocking call. Timeouts of this caller and older callers are ignored
-// // // 	
-// // // 	bool isTimeout = false;
-// // // // 	for (std::list<int>::const_iterator iterator = callerStack.end(), end = callerStack.begin(); iterator != end; --iterator) {
-// // // // // 		int a = iterator.operator*();
-// // // // 		if ( (!(S.getSequenceByID(iterator.operator*())->getIsBlocking)) | (iterator == callerStack.begin()) {	//latest caller of a non blocking sequence, or first sequence
-// // // // 			for (iterator, end = callerStack.end(); iterator != end; ++iterator) {
-// // // // 				isTimeout = isTimeout | checkTimeout(*iterator);
-// // // // 			}
-// // // // 		}
-// // // // 	}
-// // // 	return isTimeout;		//if true, at least on1 timeout occoured
-// // // }
-// // // 
-// // // bool BaseSequence::timeoutAction()
-// // // {
-// // // 	S.sequencerError.throwError();
-// // // }
+// void BaseSequence::pauseSequence()
+// {
+// 	setRunningState(paused);
+// }
+// 
+// void BaseSequence::resumeSequence()
+// {
+// 	setRunningState(running);
+// }
 
 
 // Monitors
@@ -451,47 +332,18 @@ std::vector< Monitor* > BaseSequence::getMonitors() const
 	return monitors;
 }
 
-
-
-// Timeout	(is a monitor)
-// ////////////////////////////////////////////////////////////////////////////
-void BaseSequence::setTimeoutTime(double timeoutInSec)
-{
-	conditionTimeout.setTimeoutTime(timeoutInSec);
-}
-
-void BaseSequence::resetTimeout()
-{
-	conditionTimeout.resetTimeout();
-}
-
-void BaseSequence::setTimeoutBehavior(behaviorEnum behavior)
-{
-	monitorTimeout.setBehavior(behavior);
-}
-
-void BaseSequence::setTimeoutExceptionSequence(BaseSequence* sequence)
-{
-	monitorTimeout.setExceptionSequence(sequence);
-}
-
-
-bool BaseSequence::getIsMainSequence() const
-{
-	return isMainSequence;
-}
-
-void BaseSequence::setIsMainSequence()
-{
-	isMainSequence = true;
-}
-
-
-
 // Check Monitors
-void BaseSequence::checkTimeoutMonitor()
+// ////////////////////////////////////////////////////////////////////////////
+// void BaseSequence::checkTimeoutMonitor()
+// {
+// 	checkMonitor(&monitorTimeout);
+// }
+
+void BaseSequence::checkMonitorsOfThisSequence()
 {
-	checkMonitor(&monitorTimeout);
+	for ( Monitor* monitor : getMonitors() ) {
+		checkMonitor(monitor);
+	}
 }
 
 void BaseSequence::checkMonitorsOfBlockedCallers()
@@ -524,4 +376,41 @@ void BaseSequence::checkMonitor(Monitor* monitor)
 		}
 	}
 	else return;
+}
+
+
+
+// Timeout	(is a monitor)
+// ////////////////////////////////////////////////////////////////////////////
+void BaseSequence::setTimeoutTime(double timeoutInSec)
+{
+	conditionTimeout.setTimeoutTime(timeoutInSec);
+}
+
+void BaseSequence::resetTimeout()
+{
+	conditionTimeout.resetTimeout();
+}
+
+void BaseSequence::setTimeoutBehavior(behaviorEnum behavior)
+{
+	monitorTimeout.setBehavior(behavior);
+}
+
+void BaseSequence::setTimeoutExceptionSequence(BaseSequence* sequence)
+{
+	monitorTimeout.setExceptionSequence(sequence);
+}
+
+
+// Main Sequence
+// ////////////////////////////////////////////////////////////////////////////
+bool BaseSequence::getIsMainSequence() const
+{
+	return isMainSequence;
+}
+
+void BaseSequence::setIsMainSequence()
+{
+	isMainSequence = true;
 }

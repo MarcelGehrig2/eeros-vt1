@@ -6,14 +6,14 @@ namespace eeros {
 	namespace sequencer {
 
 		enum runningStateEnum {
-			notSet,
+// 			notSet,
 			idle,
 			running,
 			paused,
 			aborting,
 			aborted,
 			terminated,
-			restartingStep,
+// 			restartingStep,
 			restarting,
 		};	// terminatedWithWarning, terminatedBecauseCallerMonitor
 		

@@ -4,9 +4,7 @@
 namespace eeros {
 	namespace sequencer {
 
-		//TODO Condition constructor by name
-		//TODO prevent name duplicates 
-		//TODO periodic validation
+
 
 		class Sequencer;
 		
