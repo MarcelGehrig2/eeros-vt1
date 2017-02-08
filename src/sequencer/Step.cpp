@@ -4,9 +4,7 @@ using namespace eeros;
 using namespace eeros::sequencer;
 
 Step::Step(Sequencer& S, BaseSequence* caller): BaseSequence(S, caller)
-{
-
-}
+{ }
 
 bool Step::isStep() const
 {
@@ -19,5 +17,3 @@ int Step::start()
 	actionFramework();
 	return 0;
 }
-
-

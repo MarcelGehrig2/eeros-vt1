@@ -6,28 +6,22 @@ namespace eeros {
 	namespace sequencer {
 
 		enum runningStateEnum {
-// 			notSet,
 			idle,
 			running,
 			paused,
 			aborting,
 			aborted,
 			terminated,
-// 			restartingStep,
 			restarting,
-		};	// terminatedWithWarning, terminatedBecauseCallerMonitor
+		};
 		
 		enum behaviorEnum {		//For Monitors
 			nothing,					//do nothing. (only exception sequence is called, if available)
-// 			notSet,
-			abortOwner,
+			abortOwner,					//abort the owner sequence or step of this monitor
 			restartOwner,				//restart the owner sequence or step of this monitor
-			abortCallerofOwner,
+			abortCallerofOwner,			//abort the caller of the owner of this monitor
 			restartCallerOfOwner,		//restart the caller of the owner of this monitor
-// 			restartStep,				//restart step, which detects the exception
-// 			abortStep,
-// 			pause,						//pause, till condition==false
-// 			goTo,
+// 			paused,						//pause, till condition==false
 		};
 		
 	};	//namespace sequencer

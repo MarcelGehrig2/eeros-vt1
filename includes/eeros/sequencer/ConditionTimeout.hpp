@@ -2,8 +2,8 @@
 #define ORG_EEROS_SEQUENCER_CONDITIONTIMEOUT_HPP_
 
 #include <chrono>
-
 #include <eeros/sequencer/Condition.hpp>
+
 
 namespace eeros {
 	namespace sequencer {

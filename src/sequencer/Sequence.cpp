@@ -1,13 +1,12 @@
-#include <eeros/sequencer/Sequencer.hpp>
 #include <eeros/sequencer/Sequence.hpp>
-#include <eeros/sequencer/BaseSequence.hpp>
+#include <eeros/sequencer/Sequencer.hpp>
 
 using namespace eeros;
 using namespace eeros::sequencer;
 
+
 Sequence::Sequence(Sequencer& S, std::__cxx11::string name)
-: Sequence(S, NULL, name)
-{log.info() << "tralala"; }
+: Sequence(S, NULL, name) { }
 
 
 Sequence::Sequence(Sequencer& S, BaseSequence* caller, std::__cxx11::string name)
@@ -26,27 +25,21 @@ Sequence::Sequence(Sequencer& S, BaseSequence* caller, std::__cxx11::string name
 	}
 	
 	S.addSequence(this);	//register this new Sequence-Object in Sequencer
+	
 	if ( this->getIsBlocking() )
 		log.trace() << "Sequence '" << name << "' created and is blocking";
 	else
 		log.trace() << "Sequence '" << name << "' created and is not blocking";
-	
-}
-
-Sequence::~Sequence()
-{
-	//TODO remove this sequence from list in Sequencer
 }
 
 void Sequence::run()	//runs in thread
 {
-	log.trace() << "Sequence '" << name << "' run() started";	
 	std::unique_lock<std::mutex> lk(m);
 	cv.wait(lk);							//sends Sequence to sleep. Waiting for start()
 	lk.unlock();
-	log.trace() << "Sequence '" << name << "' action";
+	log.trace() << "Sequence '" << name << "' started non-blocking. CallerSequence: " << callerSequence->getName();
 	actionFramework();
-	log.trace() << "Sequence '" << name << "' run() ended";
+	log.trace() << "Sequence '" << name << "' terminated";
 }
 
 int Sequence::start()
@@ -54,12 +47,11 @@ int Sequence::start()
 	resetTimeout();
 	
 	if ( getIsBlocking() ) {	//starts action() blocking
-		log.trace() << "Sequence '" << name << "' blocking action(). CallerSequence: " << callerSequence->getName();
+		log.trace() << "Sequence '" << name << "' started blocking. CallerSequence: " << callerSequence->getName();
 		actionFramework();				//action gets overwritten by child class
-		log.trace() << "Sequence '" << name << "' blocking action() ended. CallerSequence: " << callerSequence->getName();
+		log.trace() << "Sequence '" << name << "' terminated";
 	}
 	else {
-		log.trace() << "Sequence '" << name << "' nonblocking action()";
 		cv.notify_one();		//starts actionFramework() in thread
 	}
 	
@@ -68,23 +60,11 @@ int Sequence::start()
 
 int Sequence::startMainSequence()
 {
-// 	log.trace() << "Sequence::startMainSequence()      1";
 	cv.notify_one();		//starts actionFramework() in thread
 }
-
-// bool Sequence::sleepMSec(int msec)
-// {
-// 	std::this_thread::sleep_for(std::chrono::milliseconds(msec));	//TODO Check Monitors (of callers) while sleeping!
-// }
 
 bool Sequence::isStep()
 {
 	return false;
 }
-
-// BaseSequence* Sequence::getLatestCalledSequence()
-// {
-// 	return latestCalledSequence;
-// }
-
 

@@ -4,12 +4,13 @@
 using namespace eeros;
 using namespace eeros::sequencer;
 
+
 Sequencer::Sequencer()
 : SS(NULL)
 {
 	static int sequencerCounter;
 	sequencerCounter++;
-	if ( sequencerCounter > 1 ) log.error() << "______Only one sequencer object is allowed";
+	if ( sequencerCounter > 1 ) log.error() << "Only one sequencer object is allowed";
 }
 
 Sequencer::Sequencer(SafetySystem* SS)
@@ -17,11 +18,7 @@ Sequencer::Sequencer(SafetySystem* SS)
 
 void Sequencer::addSequence(Sequence* seq)
 {
-	log.trace() << "Sequence '" << seq->getName() << "' added";
 	sequenceList.push_back(seq);
-// 	for ( Sequence *seq : getListOfAllSequences() ) {
-// 		log.info() << "SSSSS '" << seq->getName() << "' added";
-// 	}
 }
 
 void Sequencer::addMainSequence(Sequence* mainSeq)
@@ -66,6 +63,11 @@ SafetySystem* Sequencer::getSafetySystem()
 	return SS;
 }
 
+std::vector< Sequence* > Sequencer::getListOfAllSequences()
+{
+	return sequenceList;
+}
+
 std::string Sequencer::getName() const
 {
 	std::string name = "Sequencer";		//included for backwards compatibelity. Only 1 Sequencer can be used.
@@ -80,11 +82,6 @@ state::type Sequencer::getState() const
 mode::type Sequencer::getMode() const
 {
 	return mode;
-}
-
-std::vector< Sequence* > Sequencer::getListOfAllSequences()
-{
-	return sequenceList;
 }
 
 

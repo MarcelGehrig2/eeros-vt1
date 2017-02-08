@@ -3,9 +3,8 @@
 
 #include <vector>
 #include <atomic>
-
 #include <eeros/core/Thread.hpp>
-#include <eeros/sequencer/Sequence.hpp>
+
 
 namespace eeros {
 	namespace sequencer {
@@ -19,7 +18,6 @@ namespace eeros {
 			enum type { automatic, stepping };
 		}
 	
-		class BaseSequence;		//forward declaration
 		class Sequence;
 		class SafetySystem;
 		
@@ -28,11 +26,6 @@ namespace eeros {
 		public:
 			Sequencer();
 			Sequencer(SafetySystem* SS);
-// 			Sequencer();
-// 			~Sequencer();	//TODO clean everything
-			
-// 			pauseSequencer();
-// 			resumeSequencer();
 			
 			void addSequence(Sequence* seq);
 			void addMainSequence(Sequence* mainSeq);
@@ -61,7 +54,6 @@ namespace eeros {
 			std::atomic<state::type> state;
 			std::atomic<mode::type> mode;
 		};
-		
 	};	//namespace sequencer
 }; // namespace eeros
 

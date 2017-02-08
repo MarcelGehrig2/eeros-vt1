@@ -8,9 +8,7 @@ using namespace eeros::sequencer;
 BaseSequence::BaseSequence(Sequencer& S, BaseSequence* caller)
 : S(S), callerSequence(caller), conditionTimeout(S), monitorTimeout(this, &conditionTimeout, behaviorEnum::abortOwner),
 runningState(runningStateEnum::idle), isBlocking(true), pollingTime(100)
-
-{ 
-
+{
 	if ( callerSequence == NULL ) {
 		static int numberOfMainSequence;
 		numberOfMainSequence++;
@@ -20,36 +18,16 @@ runningState(runningStateEnum::idle), isBlocking(true), pollingTime(100)
 			setIsMainSequence();
 	}
 	
-	
 	//get and update callerStack
 	if ( !getIsMainSequence() ) {
 		callerStack = callerSequence->getCallerStack();
 		callerStack.push_back(callerSequence);	//add latest caller
-		
-		
-// 		for ( BaseSequence* seq: getCallerStack() ) {
-// 			log.info() << "___callerStrack : " << seq->getName();
-// 		}
 	}
 	
 	//callerStackBlocking gets created, when getCallerStackBlocking() is called
 	
 	addMonitor( &monitorTimeout );
-
 }
-
-
-bool BaseSequence::checkExitCondition()
-{
-	return true;
-}
-
-bool BaseSequence::checkPreCondition()
-{
-	return true;
-}
-
-
 
 int BaseSequence::actionFramework() {
 	setRunningState( running );
@@ -67,10 +45,9 @@ int BaseSequence::actionFramework() {
 		}
 		else restartCounter = 0;
 		
-		if( runningState == paused ) {	//has to be alerted by an other sequence
-			
-			usleep(pollingTime*1000);
-		}
+// 		if( runningState == paused ) {	//has to be alerted by an other sequence
+// 			usleep(pollingTime*1000);
+// 		}
 		
 		double firstCheck = true;
 		
@@ -80,8 +57,7 @@ int BaseSequence::actionFramework() {
 			
 			while ( runningState == running ) {
 				if ( !firstCheck ) {
-					if ( checkExitCondition() ) 		setRunningState(terminated);	//check exitCondition
-// 					checkTimeoutMonitor();				//sets activeException if needed
+					if ( checkExitCondition() ) setRunningState(terminated);	//check exitCondition
 					if ( runningState != terminated ) {
 						checkMonitorsOfThisSequence();		//sets activeException if needed
 						checkMonitorsOfBlockedCallers();	//sets activeException if needed
@@ -93,7 +69,7 @@ int BaseSequence::actionFramework() {
 				if ( runningState == running ) usleep(pollingTime*1000);
 			}
 		}
-		else {
+		else {	//checkPreCondition() failed
 			setRunningState( terminated );
 		}
 	
@@ -102,223 +78,6 @@ int BaseSequence::actionFramework() {
 	if ( runningState == aborting ) setRunningState(aborted);
 	else setRunningState( terminated );
 }
-
-
-
-void BaseSequence::setPollingTime(int timeInMilliseconds)
-{
-	pollingTime = timeInMilliseconds;
-}
-
-// void BaseSequence::addMonitor(Monitor* monitor)
-// {
-// 	monitors.push_back(monitor);
-// }
-
-
-bool BaseSequence::isStep() const
-{
-	return false;
-}
-
-
-// bool BaseSequence::checkPreconditions()
-// {
-// 	bool fail;		//TODO
-// 	
-// 	checkAllMonitors();		// can change runningState
-// 	
-// 	if ( runningState != running ) fail = true; 
-// 	
-// 	//TODO what happens, if this sequence could resolve??
-// 
-// 	return !fail;
-// }
-
-
-BaseSequence* BaseSequence::getCallerSequence()
-{
-	if( callerSequence == NULL ) {
-		log.error() << "This sequence does not have a caller";
-		return NULL;
-	}
-	else return callerSequence;
-}
-
-// // // bool BaseSequence::stopCondition()
-// // // {
-// // // 	return true;	// Sequence is immediately stopped after action is performed.
-// // // }
-
-void BaseSequence::setIsBlocking()
-{
-	isBlocking = true;
-}
-
-void BaseSequence::setIsNonBlocking()
-{
-	isBlocking = false;
-}
-
-void BaseSequence::setActiveException(Monitor* activeMonitor)
-{
-	switch ( activeMonitor->getBehavior() ) {
-		case abortOwner :
-		case restartOwner :
-			activeMonitor->getOwner()->exceptionIsActive = true;
-			activeMonitor->getOwner()->activeException = activeMonitor;
-			break;
-		case abortCallerofOwner :
-		case restartCallerOfOwner :	
-			activeMonitor->getOwner()->getCallerSequence()->exceptionIsActive = true;
-			activeMonitor->getOwner()->getCallerSequence()->activeException = activeMonitor;
-			break;
-		default : break;
-	}
-	
-}
-
-void BaseSequence::clearActiveException()
-{
-	exceptionIsActive = false;
-	activeException = NULL;
-}
-
-void BaseSequence::checkActiveException()
-{
-	if ( exceptionIsActive == true ) {	// this sequence got the order to abort, restart ...
-		log.info() << "___this: " << getName();
-		switch( activeException->getBehavior() ) {
-			case nothing :				break;
-			case abortOwner : 			setRunningState(aborting);
-										break;
-			case restartOwner :			setRunningState(restarting);
-										break;
-			case abortCallerofOwner :	setRunningState(aborting);
-										break;
-			case restartCallerOfOwner : setRunningState(restarting);
-										break;
-			default : break;
-// 			case repeteCallerOfOwner :
-		}
-		clearActiveException();
-	}
-	else {								// a blocked caller got the order to abort, restart ...
-		for ( BaseSequence* seq: getCallerStack() ) {
-			if ( seq->exceptionIsActive == true ) {
-				log.info() << "___blocked caller: " << seq->getName();
-				switch( seq->activeException->getBehavior() ) {
-					case abortOwner :
-					case restartOwner :
-					case abortCallerofOwner :
-					case restartCallerOfOwner :
-												setRunningState(aborting);
-												break;
-					default : break;
-											
-				}
-			}
-		}
-	}
-}
-
-bool BaseSequence::getIsBlocking() const
-{
-	return isBlocking;
-}
-
-// std::string BaseSequence::getState() const
-// {
-// 	return state;
-// }
-// 
-// void BaseSequence::setState(std::string state)
-// {
-// 	this->state = state;
-// }
-
-runningStateEnum BaseSequence::getRunningState() const
-{
-	return runningState;
-}
-
-void BaseSequence::setRunningState(runningStateEnum runningState)
-{
-	this->runningState=runningState;
-}
-
-std::string BaseSequence::getName() const
-{
-	return name;
-}
-
-void BaseSequence::setName(std::__cxx11::string name)
-{
-	this->name = name;
-}
-
-std::vector< BaseSequence* > BaseSequence::getCallerStack() const
-{
-	return callerStack;
-}
-
-std::vector< BaseSequence* > BaseSequence::getCallerStackBlocking()
-{
-	if ( !callerStackBlockingCreated ) createCallerStackBlocking();
-	return callerStackBlocking;
-}
-
-void BaseSequence::createCallerStackBlocking()
-{
-	std::vector< BaseSequence* > tempStack;
-	for ( int i = callerStack.size(); i--; ) {	//reverse iteration
-		if ( callerStack[i]->getIsBlocking() ) tempStack.push_back(callerStack[i]);
-		else break;			
-// 		callerStack[i];
-// 		log.info() << "___callerStrack backwards: " << callerStack[i]->getName();
-	}
-	for ( int i = tempStack.size(); i--; ) {	//reverse vector
-		callerStackBlocking.push_back(tempStack[i]);
-		log.info() << "___callerStrackBlocking: " << tempStack[i]->getName();
-	}
-	callerStackBlockingCreated = true;
-}
-
-
-// SequencerException& BaseSequence::getSequencerException() const
-// {
-// 	return sequencerException;
-// }
-
-void BaseSequence::setID(int ID)
-{
-	sequenceID = ID;
-}
-
-
-int BaseSequence::getID() const
-{
-	return sequenceID;
-}
-
-void BaseSequence::restartSequence()
-{
-// 	log.info() << "void BaseSequence::restartSequence() 1";
-	setRunningState(restarting);
-	sequenceIsRestarting = true;
-// 	log.info() << "void BaseSequence::restartSequence() 2";
-}
-
-// void BaseSequence::pauseSequence()
-// {
-// 	setRunningState(paused);
-// }
-// 
-// void BaseSequence::resumeSequence()
-// {
-// 	setRunningState(running);
-// }
-
 
 // Monitors
 // ////////////////////////////////////////////////////////////////////////
@@ -332,13 +91,6 @@ std::vector< Monitor* > BaseSequence::getMonitors() const
 	return monitors;
 }
 
-// Check Monitors
-// ////////////////////////////////////////////////////////////////////////////
-// void BaseSequence::checkTimeoutMonitor()
-// {
-// 	checkMonitor(&monitorTimeout);
-// }
-
 void BaseSequence::checkMonitorsOfThisSequence()
 {
 	for ( Monitor* monitor : getMonitors() ) {
@@ -348,9 +100,9 @@ void BaseSequence::checkMonitorsOfThisSequence()
 
 void BaseSequence::checkMonitorsOfBlockedCallers()
 {
-	for ( BaseSequence* seq: getCallerStackBlocking() ) {
+	for ( BaseSequence* seq : getCallerStackBlocking() ) {
 		for ( Monitor* monitor : seq->getMonitors() ) {
-			checkMonitor(monitor);
+			checkMonitor( monitor );
 		}
 	}
 }
@@ -368,19 +120,193 @@ void BaseSequence::checkMonitor(Monitor* monitor)
 			case abortCallerofOwner :	monitor->getOwner()->getCallerSequence()->setActiveException( monitor );
 										break;
 			case restartCallerOfOwner :	monitor->getOwner()->getCallerSequence()->setActiveException( monitor );
-// 				log.info() << "restartCallerOfOwner Owner: " << monitor->getOwner()->getName();
-// 				log.info() << "restartCallerOfOwner Caller: " << monitor->getOwner()->getCallerSequence()->getName();
 										break;
-			default : break;
-// 			case repeteCallerOfOwner :
+			default :					break;
 		}
 	}
 	else return;
 }
 
+// Exceptions
+// ////////////////////////////////////////////////////////////////////////
 
+void BaseSequence::setActiveException(Monitor* activeMonitor)
+{
+	switch ( activeMonitor->getBehavior() ) {
+		case abortOwner :
+		case restartOwner :
+			activeMonitor->getOwner()->exceptionIsActive = true;
+			activeMonitor->getOwner()->activeException = activeMonitor;
+			break;
+		case abortCallerofOwner :
+		case restartCallerOfOwner :	
+			activeMonitor->getOwner()->getCallerSequence()->exceptionIsActive = true;
+			activeMonitor->getOwner()->getCallerSequence()->activeException = activeMonitor;
+			break;
+		default : break;
+	}
+}
 
-// Timeout	(is a monitor)
+void BaseSequence::clearActiveException()
+{
+	exceptionIsActive = false;
+	activeException = NULL;
+}
+
+void BaseSequence::checkActiveException()
+{
+	if ( exceptionIsActive == true ) {	// this sequence got the order to abort, restart ...
+		switch( activeException->getBehavior() ) {
+			case nothing :				break;
+			case abortOwner : 			setRunningState(aborting);
+										break;
+			case restartOwner :			setRunningState(restarting);
+										break;
+			case abortCallerofOwner :	setRunningState(aborting);
+										break;
+			case restartCallerOfOwner : setRunningState(restarting);
+										break;
+			default : 					break;
+		}
+		clearActiveException();
+	}
+	else {								// a blocked caller got the order to abort, restart ...
+		for ( BaseSequence* seq : getCallerStack() ) {
+			if ( seq->exceptionIsActive == true ) {
+				switch( seq->activeException->getBehavior() ) {
+					case abortOwner :
+					case restartOwner :
+					case abortCallerofOwner :
+					case restartCallerOfOwner :
+												setRunningState(aborting);
+												break;
+					default : 					break;
+				}
+			}
+		}
+	}
+}
+
+// Sequence / Step
+// ////////////////////////////////////////////////////////////////////////
+
+bool BaseSequence::isStep() const
+{
+	return false;
+}
+
+bool BaseSequence::checkExitCondition()
+{
+	return true;
+}
+
+bool BaseSequence::checkPreCondition()
+{
+	return true;
+}
+
+void BaseSequence::setName(std::__cxx11::string name)
+{
+	this->name = name;
+}
+
+std::string BaseSequence::getName() const
+{
+	return name;
+}
+
+void BaseSequence::setID(int ID)
+{
+	sequenceID = ID;
+}
+
+int BaseSequence::getID() const
+{
+	return sequenceID;
+}
+
+void BaseSequence::setIsMainSequence()
+{
+	isMainSequence = true;
+}
+bool BaseSequence::getIsMainSequence() const
+{
+	return isMainSequence;
+}
+
+void BaseSequence::setIsBlocking()
+{
+	isBlocking = true;
+}
+
+void BaseSequence::setIsNonBlocking()
+{
+	isBlocking = false;
+}
+
+bool BaseSequence::getIsBlocking() const
+{
+	return isBlocking;
+}
+
+BaseSequence* BaseSequence::getCallerSequence()
+{
+	if( callerSequence == NULL ) {
+		log.error() << "This sequence does not have a caller";
+		return NULL;
+	}
+	else return callerSequence;
+}
+
+std::vector< BaseSequence* > BaseSequence::getCallerStack() const
+{
+	return callerStack;
+}
+
+std::vector< BaseSequence* > BaseSequence::getCallerStackBlocking()
+{
+	if ( !callerStackBlockingCreated ) createCallerStackBlocking();
+	return callerStackBlocking;
+}
+
+void BaseSequence::createCallerStackBlocking()
+{
+	std::vector< BaseSequence* > tempStack;
+	
+	for ( int i = callerStack.size(); i--; ) {	//reverse iteration
+		if ( callerStack[i]->getIsBlocking() ) tempStack.push_back(callerStack[i]);
+		else break;
+	}
+	
+	for ( int i = tempStack.size(); i--; ) {	//reverse vector
+		callerStackBlocking.push_back(tempStack[i]);
+		log.info() << "___callerStrackBlocking: " << tempStack[i]->getName();
+	}
+	callerStackBlockingCreated = true;
+}
+
+void BaseSequence::setRunningState(runningStateEnum runningState)
+{
+	this->runningState=runningState;
+}
+
+runningStateEnum BaseSequence::getRunningState() const
+{
+	return runningState;
+}
+
+void BaseSequence::restartSequence()
+{
+	setRunningState(restarting);
+	sequenceIsRestarting = true;
+}
+
+void BaseSequence::setPollingTime(int timeInMilliseconds)
+{
+	pollingTime = timeInMilliseconds;
+}
+
+// Timeout	
 // ////////////////////////////////////////////////////////////////////////////
 void BaseSequence::setTimeoutTime(double timeoutInSec)
 {
@@ -403,14 +329,3 @@ void BaseSequence::setTimeoutExceptionSequence(BaseSequence* sequence)
 }
 
 
-// Main Sequence
-// ////////////////////////////////////////////////////////////////////////////
-bool BaseSequence::getIsMainSequence() const
-{
-	return isMainSequence;
-}
-
-void BaseSequence::setIsMainSequence()
-{
-	isMainSequence = true;
-}

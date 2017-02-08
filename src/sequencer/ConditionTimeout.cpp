@@ -3,6 +3,7 @@
 using namespace eeros;
 using namespace eeros::sequencer;
 
+
 ConditionTimeout::ConditionTimeout(Sequencer& seq)
 : Condition(seq), timeout(0)
 { }
