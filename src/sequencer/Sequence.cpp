@@ -26,10 +26,7 @@ Sequence::Sequence(Sequencer& S, BaseSequence* caller, std::__cxx11::string name
 	
 	S.addSequence(this);	//register this new Sequence-Object in Sequencer
 	
-	if ( this->getIsBlocking() )
-		log.trace() << "Sequence '" << name << "' created and is blocking";
-	else
-		log.trace() << "Sequence '" << name << "' created and is not blocking";
+	log.trace() << "Sequence '" << name << "' created";
 }
 
 void Sequence::run()	//runs in thread
@@ -37,7 +34,8 @@ void Sequence::run()	//runs in thread
 	std::unique_lock<std::mutex> lk(m);
 	cv.wait(lk);							//sends Sequence to sleep. Waiting for start()
 	lk.unlock();
-	log.trace() << "Sequence '" << name << "' started non-blocking. CallerSequence: " << callerSequence->getName();
+	if ( getIsMainSequence()) log.trace() << "Sequence '" << name << "' started non-blocking.";
+	else log.trace() << "Sequence '" << name << "' started non-blocking. CallerSequence: " << callerSequence->getName();
 	actionFramework();
 	log.trace() << "Sequence '" << name << "' terminated";
 }
@@ -47,7 +45,8 @@ int Sequence::start()
 	resetTimeout();
 	
 	if ( getIsBlocking() ) {	//starts action() blocking
-		log.trace() << "Sequence '" << name << "' started blocking. CallerSequence: " << callerSequence->getName();
+		if ( getIsMainSequence()) log.trace() << "Sequence '" << name << "' started blocking.";
+		else log.trace() << "Sequence '" << name << "' started blocking. CallerSequence: " << callerSequence->getName();
 		actionFramework();				//action gets overwritten by child class
 		log.trace() << "Sequence '" << name << "' terminated";
 	}
